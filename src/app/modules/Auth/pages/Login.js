@@ -76,12 +76,19 @@ function Login(props) {
             dataToSend:JSON.stringify({ email: values.email, password: values.password }),
           },  
           (responseLogin)=>{
+            debugger;
             console.log("in callback",responseLogin);
             if(responseLogin.status === 200){
-              disableLoading();
-              setSubmitting(false);
-              localStorage.setItem('usertest',responseLogin.user);
-              props.login(responseLogin.user);
+              if(responseLogin.user.role === "admin"){
+                disableLoading();
+                setSubmitting(false);
+                localStorage.setItem('usertest',responseLogin.user);
+                props.login(responseLogin.user);
+              }else{
+                disableLoading();
+                setSubmitting(false);
+                setStatus("Only Admin member allowed to login");
+              }
             }else{
               disableLoading();
               setSubmitting(false);

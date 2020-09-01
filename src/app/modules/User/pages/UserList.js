@@ -1,71 +1,55 @@
-import React from 'react';
-import MaterialTable from 'material-table';
+import React,{useState,useEffect} from 'react';
+import {useSelector} from "react-redux";
+import DataTableComponent from "../../Table/pages/DataTableComponent.jsx";
+import moment from "moment";
+
 
 export default function UserList() {
   const [state, setState] = React.useState({
     columns: [
-      { title: 'Name', field: 'name' },
-      { title: 'Surname', field: 'surname' },
-      { title: 'Birth Year', field: 'birthYear', type: 'numeric' },
-      {
-        title: 'Birth Place',
-        field: 'birthCity',
-        lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' },
-      },
-    ],
-    data: [
-      { name: 'Mehmet', surname: 'Baran', birthYear: 1987, birthCity: 63 },
-      {
-        name: 'Zerya Betül',
-        surname: 'Baran',
-        birthYear: 2017,
-        birthCity: 34,
-      },
-    ],
+      { title: 'First Name' },
+      { title: 'Last Name'},
+      { title: 'Email'},
+      {title: 'Date Of Created'},
+      {title:'Actions'},
+    ]
   });
 
+  const [userData,setUserData] = useState([]);
+  const globalState = useSelector(state => state)
+
+  useEffect(()=>{
+    
+    fetch('http://localhost:4000/users/',{
+      mathod:'GET',
+      headers:{
+        'content-type':'application/json',
+        'Authorization':`Bearer ${globalState.auth.authToken}`,
+      }
+    }).then(res => res.json())
+    .then(responseJson => {
+      const userDatais = [];
+      responseJson.users.map(item=> {
+        
+          item.role !== "admin"?
+          userDatais.push([item.firstName,item.lastName,item.email,moment(item.createdDate).format('ddd MM YYYY HH:mm'),item.id]):
+          console.log("admin");
+        
+        }  
+      );
+      // if(userData >= 0){
+
+        setUserData(userDatais);
+      // }
+    })
+    .catch(error=>console.log("error",error));
+  },[]);
+
+
   return (
-    <MaterialTable
-      title="User List"
-      columns={state.columns}
-      data={state.data}
-      editable={{
-        onRowAdd: (newData) =>
-          new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              setState((prevState) => {
-                const data = [...prevState.data];
-                data.push(newData);
-                return { ...prevState, data };
-              });
-            }, 600);
-          }),
-        onRowUpdate: (newData, oldData) =>
-          new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              if (oldData) {
-                setState((prevState) => {
-                  const data = [...prevState.data];
-                  data[data.indexOf(oldData)] = newData;
-                  return { ...prevState, data };
-                });
-              }
-            }, 600);
-          }),
-        onRowDelete: (oldData) =>
-          new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-              setState((prevState) => {
-                const data = [...prevState.data];
-                data.splice(data.indexOf(oldData), 1);
-                return { ...prevState, data };
-              });
-            }, 600);
-          }),
-      }}
-    />
+    <>
+      {userData.length >0?
+      <DataTableComponent columns={state.columns} data={userData} />:""}
+    </>
   );
 }
