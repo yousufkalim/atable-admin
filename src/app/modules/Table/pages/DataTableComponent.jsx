@@ -1,6 +1,9 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
 import { Button, Row, Col,Modal } from "react-bootstrap";
+import {TextField} from "@material-ui/core";
+
+// import end complimentory.
 const $ = require("jquery");
 $.DataTable = require("datatables.net");
 
@@ -8,8 +11,13 @@ export default class DataTableComponent extends Component {
   constructor(props){
     super(props);
     this.state ={
-      loading:false
+      loading:false,
+      show:true,
     }
+  }
+
+  handleClose = () => {
+    this.setState({show:false})
   }
 
   handleEdit = (id) => {
@@ -65,20 +73,28 @@ export default class DataTableComponent extends Component {
               ></table>
             </Col>
           </Row>
-          <Modal>
-            <Model.body>
-                <Col md={6}>
-                    <TextField
-                      id="outlined-name"
-                      label="Name"
-                      className={classes2.textField}
-                      value={values2.name}
-                      onChange={handleChange2("name")}
-                      margin="normal"
-                      variant="outlined"
-                    />
-                </Col>
-            </Model.body>
+          <Modal show={this.state.show} onHide={this.handleClose}>
+            <Modal.Header closeButton>
+              <Modal.Title>Modal heading</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <TextField
+                id="outlined-name"
+                label="Name"
+                value="Irtaza"
+                onChange={()=>{}}
+                margin="normal"
+                variant="outlined"
+              />
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={this.handleClose}>
+                Close
+              </Button>
+              <Button variant="primary" onClick={this.handleClose}>
+                Save Changes
+              </Button>
+            </Modal.Footer>
           </Modal>
       </div>
     );
