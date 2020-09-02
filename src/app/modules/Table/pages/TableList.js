@@ -1,81 +1,465 @@
-import React from 'react';
-import MaterialTable from 'material-table';
-import DataTableComponent from "./DataTableComponent";
+import React,{useState,useEffect, useMemo} from 'react';
+import {useSelector} from "react-redux";
+// react bootstarp components
+import { Button, Row, Col,Modal } from "react-bootstrap";
+// material ui components
+import {TextField, InputAdornment, IconButton} from "@material-ui/core";
+// icons form material ui
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
 
-export default function TableList() {
+// required imports....
+import DataTableComponent from "../../Table/pages/DataTableComponent.jsx";
+import WebServicesManager from "../../../../WebServiceManager/WebServicesManager";
+import moment from "moment";
+import Utilities from "../../../../Utilities/Utilities";
+
+export default function UserList() {
   const [state, setState] = React.useState({
-    columns: [
-      { title: 'Name', field: 'name' },
-      { title: 'Surname', field: 'surname' },
-      { title: 'Birth Year', field: 'birthYear', type: 'numeric' },
-      {
-        title: 'Birth Place',
-        field: 'birthCity',
-        lookup: { 34: 'İstanbul', 63: 'Şanlıurfa' },
-      },
-    ],
-    columns1:[
-      {title:'Name'},
-      {title:'SurName'},
-      {title:'Birth Year'},
-      {title:'Birth City'},
-    ],
-    data: [
-      { name: 'Mehmet', surname: 'Baran', birthYear: 1987, birthCity: 63 },
-      {
-        name: 'Zerya Betül',
-        surname: 'Baran',
-        birthYear: 2017,
-        birthCity: 34,
-      },
-    ],
+    infoId:"",
+    // first Name
+    firstName:"",
+    firstNameError:"",
+    // last Name
+    lastName:"",
+    lastNameError:"",
+    // email
+    email:"",
+    emailError:"",
+    // password
+    password:"",
+    passwordError:"",
+    // confirm password
+    // cPassword:"",
+    // cPasswordError:"",
   });
+
+  const columns = [
+    { title: 'First Name' },
+    { title: 'Last Name'},
+    { title: 'Email'},
+    {title: 'Date Of Created'},
+    {title:'Actions'},
+  
+  ];
+
+  // show password for update or not
+  const [showPasswordField,setShowPasswordField] = useState(false);
+  const [oldPass,setOldPass] = useState("");
+  const [userData,setUserData] = useState([]);
+  const [updateData,setUpdateData] = useState(false);
+  // model toogler
+  const [show,setShow] = useState(false);
+  const [showEdit,setShowEdit] = useState(false);
+  // disables button toogles
+  const [btnDisabled,setBtnDisabled]  = useState(true);
+  // password view toogles state
+  const [typeis,setTypeis] = useState('password');
+  // global state from redux
+  const globalState = useSelector(state => state);
+  // api webservice
+  const WebServiceManager = useMemo(() => new WebServicesManager(), []);
+
+  useEffect(()=>{
+    setUserData([]);
+    fetch('http://localhost:4000/users/',{
+      mathod:'GET',
+      headers:{
+        'content-type':'application/json',
+        'Authorization':`Bearer ${globalState.auth.authToken}`,
+      }
+    }).then(res => res.json())
+    .then(responseJson => {
+      var userDatais = [];
+      responseJson.users.map(item=> {
+        
+          item.role !== "admin"?
+          userDatais.push([item.firstName,item.lastName,item.email,moment(item.createdDate).format('ddd MM YYYY HH:mm'),item.id]):
+          console.log("admin");
+        
+        }  
+      );
+      // debugger;
+      console.log(typeof userDatais);
+      setUserData(userDatais);
+    })
+    .catch(error=>console.log("error",error));
+  },[updateData]);
+
+
+  // handle button disable function
+  const handleBtnDisables = () => {
+    // debugger;
+    const {firstName,lastName,email,password,emailError,passwordError,firstNameError,lastNameError} = state;
+    var stateUpdate = state;
+    if(firstName !== "" && lastName !=="" && email !== "" && password !==""){
+      if(firstNameError === "" && lastNameError === "" && emailError === "" && passwordError === ""){
+        setBtnDisabled(false);
+      }
+      else{
+        setBtnDisabled(true);
+      }
+    }else{
+      setBtnDisabled(true);
+    }
+  }
+
+  //  reset state data
+  const handleResetState = () => {
+    setState({
+      infoId:"",
+      // first Name
+      firstName:"",
+      firstNameError:"",
+      // last Name
+      lastName:"",
+      lastNameError:"",
+      // email
+      email:"",
+      emailError:"",
+      // password
+      password:"",
+      passwordError:"",
+      // confirm password
+      cPassword:"",
+      cPasswordError:"",
+    })
+    setShowPasswordField(false);
+  }
+
+  // handle Change to fields
+  const handleEmailChange = e =>{
+    if(Utilities.ValidateEmail(e.target.value)){
+      setState({...state,emailError:""})
+      handleBtnDisables()
+    }else{
+      setState({...state,emailError:"Invalid Email"})
+      handleBtnDisables()
+    }
+    setState({...state,email:e.target.value})
+    handleBtnDisables()
+  }
+  
+  const handleChange = e => {
+    var stateUpdate = {...state};
+    stateUpdate[e.target.name] = e.target.value;
+    setState(stateUpdate);
+    handleBtnDisables()
+  }
+
+  const handleToogle = ()=> {
+    typeis === "password"?setTypeis('text'):setTypeis('password');
+  }
+
+  // handleCloseModels
+  const handleClose = () => {
+    setShow(false);
+  }
+  const handleCloseEdit = () => {
+    setShowEdit(false);
+    handleResetState();
+  }
+
+
+  // handle add new record
+  const handleAdd = () =>{
+    const {firstName,lastName,email,password} = state;
+    const info = {
+      firstName,
+      lastName,
+      email,
+      password
+    }
+    WebServiceManager.postApiCall(
+      {
+        endPoint:'users/register',
+        dataToInsert:JSON.stringify(info),
+        token:globalState.auth.authToken,
+      },
+      (statusCode,responseAdd)=>{
+        if(statusCode === 200){
+          handleClose();
+          handleResetState();
+          setUpdateData(!updateData);
+        }else{
+          alert(responseAdd.message);
+        }
+      }
+    )
+
+  }
+
+  // handle Edit Click
+  const handleEdit = (id) => {
+    var stateUpdate = state;
+    WebServiceManager.getApiWithParamCall(
+      {
+        endPoint:'users',
+        dataToFetch:id,
+        token:globalState.auth.authToken,
+      },
+      (statusCode,responseUser)=>{  
+        stateUpdate.firstName = responseUser.firstName;
+        stateUpdate.lastName = responseUser.lastName;
+        stateUpdate.email  = responseUser.email;
+        stateUpdate.password = responseUser.password;
+        stateUpdate.infoId = id;
+        setState(stateUpdate);
+        setShowEdit(true);
+        console.log("State before",state);
+        // handleBtnDisables();
+      }
+    )
+  }
+
+  // handle Edit submit (update call.)
+  const handleUpdate = (id) => {
+    const {firstName,lastName,email,password,infoId} = state;
+    const info = {
+      firstName,
+      lastName,
+      email,
+      password,
+    } 
+    WebServiceManager.putApi(
+      {
+        endPoint:'users',
+        userID:infoId,
+        dataToUpdate:JSON.stringify(info),
+        token:globalState.auth.authToken,
+      },
+      (statusCode,responseUpdate)=>{
+        debugger;
+        console.log("updates");
+        setShowEdit(false);
+        setUpdateData(!updateData);
+      }
+    )
+  }
+
+  // handle delete function
+  const handleDelete = (id) => {
+
+    const confirmis = window.confirm("Are you sure you want to delete?"); 
+
+    if(confirmis === true){
+      WebServiceManager.DeleteApiInURL(
+        {
+          endPoint:'users',
+          dataToDelete:id,
+          token:globalState.auth.authToken
+        },
+        (statusCode,response)=>{
+          setUpdateData(!updateData);
+        }
+      )
+    }
+  }
+
+  // handle Show Password
+  const handleShowPassword = () => {
+    setShowPasswordField(!showPasswordField);
+    if(showPasswordField !== true){
+      setOldPass(state.password);
+      var stateUpdate = state;
+      stateUpdate.password = "";
+      setState(stateUpdate);
+      handleBtnDisables();
+    }else{
+      var stateUpdate = state;
+      stateUpdate.password = oldPass;
+      setState(stateUpdate);
+      setOldPass("");
+    }
+  }
+
+  const actionsList = {
+    deleteAction:handleDelete,
+    updateAction:handleEdit,
+    addAction:()=>setShow(true),
+  }
 
   return (
     <>
-      <MaterialTable
-        title="Resturant Table"
-        columns={state.columns}
-        data={state.data}
-        editable={{
-          onRowAdd: (newData) =>
-            new Promise((resolve) => {
-              setTimeout(() => {
-                resolve();
-                setState((prevState) => {
-                  const data = [...prevState.data];
-                  data.push(newData);
-                  return { ...prevState, data };
-                });
-              }, 600);
-            }),
-          onRowUpdate: (newData, oldData) =>
-            new Promise((resolve) => {
-              setTimeout(() => {
-                resolve();
-                if (oldData) {
-                  setState((prevState) => {
-                    const data = [...prevState.data];
-                    data[data.indexOf(oldData)] = newData;
-                    return { ...prevState, data };
-                  });
-                }
-              }, 600);
-            }),
-          onRowDelete: (oldData) =>
-            new Promise((resolve) => {
-              setTimeout(() => {
-                resolve();
-                setState((prevState) => {
-                  const data = [...prevState.data];
-                  data.splice(data.indexOf(oldData), 1);
-                  return { ...prevState, data };
-                });
-              }, 600);
-            }),
-        }}
-      />
-      <DataTableComponent columns={state.columns1} data={state.data} />
+    {console.log('usersata',userData)}
+      {userData.length >0?
+        <DataTableComponent actionCol={4} columns={columns} data={userData} tokenis={globalState.auth.authToken} refreshData={setUpdateData} currentStateRefresh={updateData} actions={actionsList} />:""}
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Add User</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row>
+            <Col md={6}>
+              <TextField
+                id="outlined-first-name"
+                label="First Name"
+                value={state.firstName}
+                name="firstName"
+                helperText={state.firstNameError}
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+              />
+            </Col>
+            <Col md={6}>
+              <TextField
+                id="outlined-last-name"
+                label="Last Name"
+                value={state.lastName}
+                name="lastName"
+                onChange={handleChange}
+                helperText={state.lastNameError}
+                margin="normal"
+                variant="outlined"
+              />
+            </Col>
+            <Col md={6}>
+              <TextField
+                id="outlined-email"
+                label="Email"
+                value={state.email}
+                name="email"
+                onChange={e=>handleEmailChange(e)}
+                margin="normal"
+                helperText={state.emailError}
+                variant="outlined"
+              />
+            </Col>
+            <Col md={6}>
+              <TextField
+                id="outlined-password"
+                label="Password"
+                type={typeis}
+                value={state.password}
+                name={"password"}
+                onChange={handleChange}
+                margin="normal"
+                helperText={state.passwordError}
+                variant="outlined"
+                // this is where visible button will be added
+                InputProps={{ // <-- This is where the toggle button is added.
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleToogle}
+                        onMouseDown={handleToogle}
+                      >
+                        {typeis === 'password' ? <VisibilityIcon/> : <VisibilityOffIcon/> }
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+              />
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" disabled={btnDisabled} onClick={handleAdd}>
+            Add User
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* edit model */}
+      <Modal show={showEdit} onHide={handleCloseEdit}>
+        <Modal.Header closeButton>
+          <Modal.Title>Update User</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row>
+            <Col md={6}>
+              <TextField
+                id="outlined-first-name-updated"
+                label="First Name"
+                value={state.firstName}
+                name="firstName"
+                helperText={state.firstNameError}
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+              />
+            </Col>
+            <Col md={6}>
+              <TextField
+                id="outlined-last-name-updated"
+                label="Last Name"
+                value={state.lastName}
+                name="lastName"
+                onChange={handleChange}
+                helperText={state.lastNameError}
+                margin="normal"
+                variant="outlined"
+              />
+            </Col>
+            <Col md={6}>
+              <TextField
+                id="outlined-email-update"
+                label="Email"
+                disabled={true}
+                value={state.email}
+                name="email"
+                onChange={e=>handleEmailChange(e)}
+                margin="normal"
+                helperText={state.emailError}
+                variant="outlined"
+              />
+            </Col>
+            <Col sm={12}>
+              <FormGroup row>
+                <FormControlLabel
+                  control={<Checkbox checked={showPasswordField} onChange={handleShowPassword} name="showPassword" />}
+                  label="Change Password"
+                />
+              </FormGroup>
+            </Col>
+            {showPasswordField?
+              <Col md={12}>
+                <TextField
+                  id="outlined-password-update"
+                  label="Password"
+                  type={typeis}
+                  value={state.password}
+                  name="password"
+                  onChange={handleChange}
+                  margin="normal"
+                  helperText={state.passwordError}
+                  variant="outlined"
+                  // this is where visible button will be added
+                  InputProps={{ // <-- This is where the toggle button is added.
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleToogle}
+                          onMouseDown={handleToogle}
+                        >
+                          {typeis === 'password' ? <VisibilityIcon/> : <VisibilityOffIcon/> }
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+              </Col>:
+              ""
+            }
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseEdit}>
+            Close
+          </Button>
+          <Button variant="primary" disabled={btnDisabled} onClick={handleUpdate}>
+            Update User
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }
