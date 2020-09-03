@@ -36,6 +36,34 @@ export default class WebServicesManager extends React.Component {
     );
   }
 
+  //  form form submition with form data.
+
+  postApiCallForm(params, callback) {
+    return this.callPostMethodForm(
+      this.baseUrl + params.endPoint,
+      params,
+      callback
+    );
+  }
+
+  callPostMethodForm(apiURL, params, callback) {
+    let headeris = {}
+    if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
+    fetch(apiURL, {
+      method: "POST",
+      headers:headeris,
+      body: params.dataToInsert
+    })
+      .then(response => response.json())
+      .then(responseJson => {
+        let statusCode = responseJson.status;
+        callback(statusCode, responseJson);
+      })
+      .catch(error => {
+        console.log("error Form POST",error.message);
+      });
+  }
+
   //Get method
   callGetMethod(baseURL, params, callback) {
     let headeris = {
@@ -287,6 +315,31 @@ getApiwithParamReturnMsg(params, callback) {
 
   putApi(params, callback) {
     return this.callPutMethod(this.baseUrl + params.endPoint, params, callback);
+  }
+
+
+  // form
+  putApiForm(params, callback) {
+    return this.callPutMethodForm(this.baseUrl + params.endPoint, params, callback);
+  }
+
+  callPutMethodForm(baseURL, params, callback) {
+    let headeris = {}
+    console.log('paramsData',params.dataToUpdate);
+    if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
+    baseURL = baseURL + "/" + params.userID
+
+    fetch(baseURL, {
+      method: "PUT",
+      headers: headeris,
+      body: params.dataToUpdate,
+    })
+      .then(response => response.json())
+      .then(responseJson => {
+        let statusCode = responseJson.status;
+        callback(statusCode, responseJson);
+      })
+      .catch(error => console.log("error is"+error));
   }
 
   //delete with parameters method with ID

@@ -1,40 +1,32 @@
-import React,{useState,useEffect, useMemo} from 'react';
+import React,{useState,useEffect, useMemo,useRef} from 'react';
 import {useSelector} from "react-redux";
 // react bootstarp components
 import { Button, Row, Col,Modal } from "react-bootstrap";
 // material ui components
-import {TextField, InputAdornment, IconButton} from "@material-ui/core";
-// icons form material ui
-import VisibilityIcon from '@material-ui/icons/Visibility';
-import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
+import {TextField} from "@material-ui/core";
+import Autocomplete from '@material-ui/lab/Autocomplete';
+// -----------------
 
 // required imports....
 import DataTableComponent from "../../Table/pages/DataTableComponent.jsx";
 import WebServicesManager from "../../../../WebServiceManager/WebServicesManager";
 import moment from "moment";
-import Utilities from "../../../../Utilities/Utilities";
+
 
 export default function RestaurantList() {
+
+  //  reffeance for input field
+  const hiddenFileInput  = useRef(null);
   const [state, setState] = React.useState({
     infoId:"",
-    // first Name
-    firstName:"",
-    firstNameError:"",
-    // last Name
-    lastName:"",
-    lastNameError:"",
-    // email
-    email:"",
-    emailError:"",
-    // password
-    password:"",
-    passwordError:"",
-    // confirm password
-    // cPassword:"",
-    // cPasswordError:"",
+    resturant_name:"",
+    resturant_desc:"",
+    resturant_image:"",
+    address:'',
+    zipCode:'',
+    lat:'',
+    long:'',
+    addressError:'',
   });
 
   const columns = [
@@ -46,10 +38,14 @@ export default function RestaurantList() {
   
   ];
 
-  // show password for update or not
-  const [showPasswordField,setShowPasswordField] = useState(false);
   const [restaurantData,setRestaurantData] = useState([]);
   const [updateData,setUpdateData] = useState(false);
+  const [loader,setLoader] = useState(false);
+  // auto complete Library values
+  const [values,setValues] = useState([]);
+  const [showImage,setShowImage] = useState('https://posterprintfactory.com/assets/file_placeholder.png');
+  const [imageFile,setImageFile] = useState(null);
+  const [imageError,setImageError] = useState('');
   // model toogler
   const [show,setShow] = useState(false);
   const [showEdit,setShowEdit] = useState(false);
@@ -70,13 +66,12 @@ export default function RestaurantList() {
       }
     }).then(res => res.json())
     .then(responseJson => {
-      console.log("restu",responseJson);
       var userDatais = [];
       responseJson.map(item=> {
           console.log("item",item);
           userDatais.push(
             [
-              `<img src=${item.resturant_image} alt="resturant Image" />`,
+              `<img style="width:50px;height:50px" src="http://localhost:4000/${item.resturant_image}" alt="resturant Image" />`,
               item.resturant_name,
               item.resturant_desc,
               moment(item.createdDate).format('ddd MM YYYY HH:mm'),
@@ -86,34 +81,104 @@ export default function RestaurantList() {
         }  
       );
       setRestaurantData(userDatais);
-      console.log("sa",restaurantData);
     })
     .catch(error=>console.log("error",error));
   },[updateData]);
 
+  const GetAllAdress = e => {
+    var stateUpdate = state;
+    if(stateUpdate.lat==="" || stateUpdate.long === ""){
+      stateUpdate.address=e.target.value
+      stateUpdate.addressError = "Please Select From Option to avail location functionilty in app.";
+      setState(stateUpdate);
+    }
+    // calling api to get request result for address.
+    fetch(
+      "https://api-adresse.data.gouv.fr/search/?q=" +
+        e.target.value +
+        "&type=street&autocomplete=1&limit=15"
+    )
+    .then(response => response.json())
+    .then(responseJson => {
+      console.log("res address",responseJson);
+      var addressToSet = [];
+      // debugger;
+      for (var i = 0; i < responseJson.features.length; i++) {
+        addressToSet.push({
+          id: i,
+          label: responseJson.features[i].properties.label,
+          city: responseJson.features[i].properties.city,
+          PostalCode: responseJson.features[i].properties.postcode,
+          lat: responseJson.features[0].geometry.coordinates[1],
+          lng: responseJson.features[0].geometry.coordinates[0]
+        });
+      }
+      if (addressToSet.length === responseJson.features.length) {
+        setValues(addressToSet);
+      }
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  }
+
+  const SetAddress = async item => {
+    console.log("item",item.target.textContent )
+    const selectedItem = item.target.textContent;
+    for(var i=0;i<values.length;i++){
+      if(values[i].label === selectedItem){
+        var stateUpdate = state;
+        var zipCode = values[i].PostalCode;
+        var lat = values[i].lat;
+        var lng = values[i].lng;
+        // var newAddress = values[i].label.split(String(zipCode));
+        stateUpdate.address = values[i].label;
+        stateUpdate.zipCode = zipCode; 
+        stateUpdate.lat = lat;
+        stateUpdate.long =  lng;
+        stateUpdate.addressError = "";
+        console.log("updated Data",stateUpdate);
+        await setState(stateUpdate);
+        console.log('New',state);
+        // dummy state to update fields 
+        setLoader(!loader);
+        handleBtnDisables();
+      }
+    }
+  };
+
 
   // handle button disable function
   const handleBtnDisables = () => {
-    // debugger;
-    // const {firstName,lastName,email,password,emailError,passwordError,firstNameError,lastNameError} = state;
-    // var stateUpdate = state;
-    // if(firstName !== "" && lastName !=="" && email !== "" && password !==""){
-    //   if(firstNameError === "" && lastNameError === "" && emailError === "" && passwordError === ""){
-    //     setBtnDisabled(false);
-    //   }
-    //   else{
-    //     setBtnDisabled(true);
-    //   }
-    // }else{
-    //   setBtnDisabled(true);
-    // }
+    const {resturant_name,resturant_desc,lat,long,addressError} = state;
+    if(resturant_name !== "" && resturant_desc !=="" && lat !==""&& long !==""){
+      if(addressError === ""){ 
+        if(imageFile !== null || state.infoId !== ""){
+          setImageError('');
+          setBtnDisabled(false);
+        }else{
+          setBtnDisabled(true);
+          setImageError('This Field is required')
+        }
+      }else{
+        setBtnDisabled(true);
+      }
+    }else{
+      setBtnDisabled(true);
+    }
   }
 
   //  reset state data
   const handleResetState = () => {
-    // setState({
-      
-    // })
+    setState({
+      resturant_image:"",
+      resturant_desc:"",
+      resturant_image:"",
+      address:'',
+      zipCode:'',
+      lat:'',
+      long:'',
+    })
   }
 
   
@@ -137,97 +202,115 @@ export default function RestaurantList() {
 
   // handle add new record
   const handleAdd = () =>{
-    // const {firstName,lastName,email,password} = state;
-    // const info = {
-    //   firstName,
-    //   lastName,
-    //   email,
-    //   password
-    // }
-    // WebServiceManager.postApiCall(
-    //   {
-    //     endPoint:'users/register',
-    //     dataToInsert:JSON.stringify(info),
-    //     token:globalState.auth.authToken,
-    //   },
-    //   (statusCode,responseAdd)=>{
-    //     if(statusCode === 200){
-    //       handleClose();
-    //       handleResetState();
-    //       setUpdateData(!updateData);
-    //     }else{
-    //       alert(responseAdd.message);
-    //     }
-    //   }
-    // )
+    const {resturant_name,resturant_desc,lat,long,address,zipCode} = state;
+    const form = new FormData();
+    form.append('resturant_name',resturant_name);
+    form.append('resturant_desc',resturant_desc);
+    form.append('resturant_lat',lat);
+    form.append('resturant_lng',long);
+    form.append('resturant_address',address);
+    form.append('resturant_zipCode',zipCode);
+    if(imageFile !== null){
+      form.append('resturant_image',imageFile,imageFile.name);
+    }
+    WebServiceManager.postApiCallForm(
+      {
+        endPoint:'resturants/register',
+        dataToInsert:form,
+        token:globalState.auth.authToken,
+      },
+      (statusCode,responseAdd)=>{
+        if(statusCode === "200"){
+          handleClose();
+          handleResetState();
+          setUpdateData(!updateData);
+        }else{
+          alert(responseAdd.message);
+        }
+      }
+    )
 
   }
 
   // handle Edit Click
   const handleEdit = (id) => {
-    // var stateUpdate = state;
-    // WebServiceManager.getApiWithParamCall(
-    //   {
-    //     endPoint:'users',
-    //     dataToFetch:id,
-    //     token:globalState.auth.authToken,
-    //   },
-    //   (statusCode,responseUser)=>{  
-    //     stateUpdate.firstName = responseUser.firstName;
-    //     stateUpdate.lastName = responseUser.lastName;
-    //     stateUpdate.email  = responseUser.email;
-    //     stateUpdate.password = responseUser.password;
-    //     stateUpdate.infoId = id;
-    //     setState(stateUpdate);
-    //     setShowEdit(true);
-    //     console.log("State before",state);
-    //     // handleBtnDisables();
-    //   }
-    // )
+    var stateUpdate = state;
+    WebServiceManager.getApiWithParamCall(
+      {
+        endPoint:'resturants',
+        dataToFetch:id,
+        token:globalState.auth.authToken,
+      },
+      (statusCode,responseUser)=>{
+        stateUpdate.resturant_name = responseUser.resturant_name;
+        stateUpdate.resturant_desc = responseUser.resturant_desc;
+        stateUpdate.address  = responseUser.resturant_address;
+        stateUpdate.zipCode = responseUser.resturant_zipCode;
+        stateUpdate.lat = responseUser.resturant_lat;
+        stateUpdate.long = responseUser.resturant_lng;
+        stateUpdate.infoId = id;
+        setState(stateUpdate);
+        setShowImage("http://localhost:4000/"+responseUser.resturant_image)
+        setShowEdit(true);
+        handleBtnDisables();
+        console.log("State before",state);
+        // handleBtnDisables();
+      }
+    )
   }
 
   // handle Edit submit (update call.)
-  const handleUpdate = (id) => {
-    // const {firstName,lastName,email,password,infoId} = state;
-    // const info = {
-    //   firstName,
-    //   lastName,
-    //   email,
-    //   password,
-    // } 
-    // WebServiceManager.putApi(
-    //   {
-    //     endPoint:'users',
-    //     userID:infoId,
-    //     dataToUpdate:JSON.stringify(info),
-    //     token:globalState.auth.authToken,
-    //   },
-    //   (statusCode,responseUpdate)=>{
-    //     debugger;
-    //     console.log("updates");
-    //     setShowEdit(false);
-    //     setUpdateData(!updateData);
-    //   }
-    // )
+  const handleUpdate = () => {
+    const {resturant_name,resturant_desc,lat,long,infoId,address,zipCode} = state;
+    debugger;
+    const formdata = new FormData();
+    formdata.append('resturant_name',resturant_name);
+    formdata.append('resturant_desc',resturant_desc);
+    formdata.append('resturant_lat',lat);
+    formdata.append('resturant_lng',long);
+    formdata.append('resturant_address',address);
+    formdata.append('resturant_zipCode',zipCode);
+    if(imageFile !== null){
+      formdata.append('resturant_image',imageFile,imageFile.name);
+    }
+
+    for (var key of formdata.entries()) {
+      console.log(key[0] + ', ' + key[1]);
+    }
+    
+    WebServiceManager.putApiForm(
+      {
+        endPoint:'resturants',
+        userID:infoId,
+        dataToUpdate:formdata,
+        token:globalState.auth.authToken,
+      },
+      (statusCode,responseUpdate)=>{
+        debugger;
+        console.log("updates");
+        setShowEdit(false);
+        setUpdateData(!updateData);
+      }
+    )
   }
 
   // handle delete function
   const handleDelete = (id) => {
 
-    // const confirmis = window.confirm("Are you sure you want to delete?"); 
+    const confirmis = window.confirm("Are you sure you want to delete?"); 
 
-    // if(confirmis === true){
-    //   WebServiceManager.DeleteApiInURL(
-    //     {
-    //       endPoint:'users',
-    //       dataToDelete:id,
-    //       token:globalState.auth.authToken
-    //     },
-    //     (statusCode,response)=>{
-    //       setUpdateData(!updateData);
-    //     }
-    //   )
-    // }
+    if(confirmis === true){
+      WebServiceManager.DeleteApiInURL(
+        {
+          endPoint:'resturants',
+          dataToDelete:id,
+          token:globalState.auth.authToken
+        },
+        (statusCode,response)=>{
+          setUpdateData(!updateData);
+        }
+      )
+    }
   }
 
   const actionsList = {
@@ -236,11 +319,280 @@ export default function RestaurantList() {
     addAction:()=>setShow(true),
   }
 
+  // custom image 
+
+  const handleClick = event => {
+    hiddenFileInput.current.click();
+  };
+  // Call a function (passed as a prop from the parent component)
+  // to handle the user-selected file 
+  const handleChangeImage = event => {
+    const fileUploaded = event.target.files[0];
+    setImageFile(fileUploaded);
+    const Update = state;
+    Update.resturant_desc = state.resturant_desc+"."
+    setState(Update);
+    var reader = new FileReader();
+    reader.readAsDataURL(fileUploaded);
+    reader.onload = function(e) {
+      // console.log(reader.result); 
+      setShowImage(reader.result);
+      handleBtnDisables();
+    };
+  }
+
   return (
     <>
       {restaurantData.length >0?
         <DataTableComponent actionCol={4} columns={columns} data={restaurantData} tokenis={globalState.auth.authToken} actions={actionsList} />
       :""}
+      {/* add modal */}
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Add Restaurant</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row>
+            {/* <label style={{color:'red'}}>{imageError}</label> */}
+            <Col sm={12} style={{display:'flex',justifyContent:'center'}}>
+              <img onClick={handleClick} src={showImage} style={{width:'200px',objectFit:'fill',height:'150px',borderRadius:'5px'}} />
+              <input
+                type="file"
+                ref={hiddenFileInput}
+                onChange={handleChangeImage}
+                style={{display: 'none'}}
+              />
+            </Col>
+            <small style={{textAlign:'center',fontWeight:'bold',color:'red'}}>**Click On Image to Upload New.**</small>
+            <Col md={12}>
+              <TextField
+                id="outlined-name"
+                label="Restaurant Name"
+                name="resturant_name"
+                value={state.resturant_name}
+                onChange={handleChange}
+                variant="outlined"
+                margin="normal"
+              />
+            </Col>
+            <Col md={12}>
+              <TextField
+                id="outlined-desc"
+                label="Description"
+                value={state.resturant_desc}
+                name="resturant_desc"
+                multiline
+                rows={5}
+                onChange={handleChange}
+                helperText={state.lastNameError}
+                margin="normal"
+                variant="outlined"
+              />
+            </Col>
+            <Col md={12}>
+              <Autocomplete
+                id="country-select-demo"
+                options={values}
+                style={{ marginTop: 15 }}
+                autoHighlight
+                getOptionLabel={(option) => option.label}
+                autoSelect
+                onChange={SetAddress}
+                renderOption={(option) => (
+                  <React.Fragment>
+                    {option.label}
+                  </React.Fragment>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Choose a country"
+                    variant="outlined"
+                    value={state.address}
+                    onChange={GetAllAdress}
+                    helperText={state.addressError}
+                    inputProps={{
+                      ...params.inputProps,
+                      autoComplete: 'new-password', // disable autocomplete and autofill
+                    }}
+                  />
+                )}
+              />
+            </Col>
+            <Col md={4}>
+              <TextField
+                id="outlined-zip"
+                label="ZIPCODE"
+                type="text"
+                value={state.zipCode}
+                name="zipCode"
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+                disabled={true}
+              />
+            </Col>
+            <Col md={4}>
+              <TextField
+                id="outlined-lat"
+                label="Latitude"
+                type="text"
+                value={state.lat}
+                name="lat"
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+                disabled={true}
+              />
+            </Col>
+            <Col md={4}>
+              <TextField
+                id="outlined-long"
+                label="Longitude"
+                type="text"
+                value={state.long}
+                name="long"
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+                disabled={true}
+              />
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+          <Button variant="primary" disabled={btnDisabled} onClick={handleAdd}>
+            Add Restaurant
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      {/* edit modal */}
+      <Modal show={showEdit} onHide={handleCloseEdit}>
+        <Modal.Header closeButton>
+          <Modal.Title>Update Restaurant</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Row>
+            {/* <label style={{color:'red'}}>{imageError}</label> */}
+            <Col sm={12} style={{display:'flex',justifyContent:'center'}}>
+              <img onClick={handleClick} src={showImage} style={{width:'200px',objectFit:'fill',height:'150px',borderRadius:'5px'}} />
+              <input
+                type="file"
+                ref={hiddenFileInput}
+                onChange={handleChangeImage}
+                style={{display: 'none'}}
+              />
+            </Col>
+            <small style={{textAlign:'center',fontWeight:'bold',color:'red'}}>**Click On Image to Upload New.**</small>
+            <Col md={12}>
+              <TextField
+                id="outlined-name"
+                label="Restaurant Name"
+                name="resturant_name"
+                value={state.resturant_name}
+                onChange={handleChange}
+                variant="outlined"
+                margin="normal"
+              />
+            </Col>
+            <Col md={12}>
+              <TextField
+                id="outlined-desc"
+                label="Description"
+                value={state.resturant_desc}
+                name="resturant_desc"
+                multiline
+                rows={5}
+                onChange={handleChange}
+                helperText={state.lastNameError}
+                margin="normal"
+                variant="outlined"
+              />
+            </Col>
+            <Col md={12}>
+              <Autocomplete
+                id="country-select-demo"
+                options={values}
+                style={{ marginTop: 15 }}
+                autoHighlight
+                getOptionLabel={(option) => option.label}
+                autoSelect
+                onChange={SetAddress}
+                renderOption={(option) => (
+                  <React.Fragment>
+                    {option.label}
+                  </React.Fragment>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Address"
+                    variant="outlined"
+                    value={state.address}
+                    onChange={GetAllAdress}
+                    helperText={state.addressError}
+                    inputProps={{
+                      ...params.inputProps,
+                      autoComplete: 'new-password', // disable autocomplete and autofill
+                    }}
+                  />
+                )}
+              />
+              {console.log('state',state.zipCode)}
+            </Col>
+            <Col md={4}>
+              <TextField
+                id="outlined-zip"
+                label="ZipCode"
+                type="text"
+                value={state.zipCode}
+                name="zipCode"
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+                disabled={true}
+              />
+            </Col>
+            <Col md={4}>
+              <TextField
+                id="outlined-lat"
+                label="Latitude"
+                type="text"
+                value={state.lat}
+                name="lat"
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+                disabled={true}
+              />
+            </Col>
+            <Col md={4}>
+              <TextField
+                id="outlined-long"
+                label="Longitude"
+                type="text"
+                value={state.long}
+                name="long"
+                onChange={handleChange}
+                margin="normal"
+                variant="outlined"
+                disabled={true}
+              />
+            </Col>
+          </Row>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseEdit}>
+            Close
+          </Button>
+          <Button variant="primary" disabled={btnDisabled} onClick={handleUpdate}>
+            Updates Restaurant
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 }
