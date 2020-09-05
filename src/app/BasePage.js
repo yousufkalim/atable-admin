@@ -6,6 +6,8 @@ import UserPage from "./pages/UserPage";
 import RestaurantPage from "./pages/RestaurantPage";
 import TablePage from "./pages/TablePage";
 import {DashboardPage} from "./pages/DashboardPage";
+import MenuPage from "./pages/MenuPage.js";
+import DishesPage from "./pages/DishesPage";
 
 export default function BasePage() {
     // useEffect(() => {
@@ -25,6 +27,8 @@ export default function BasePage() {
                 <ContentRoute path="/user" component={UserPage} />
                 <ContentRoute path="/restaurant" component={RestaurantPage} />
                 <ContentRoute path="/table" component={TablePage} />
+                <ContentRoute path= "/menu/:id" component={MenuPage} />
+                <ContentRoute path="/dishes/:menu_id" component={DishesPage} />
                 <Redirect to="error/error-v1"/>
             </Switch>
         </Suspense>

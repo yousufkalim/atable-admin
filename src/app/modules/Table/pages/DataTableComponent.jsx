@@ -26,6 +26,12 @@ export default class DataTableComponent extends Component {
               <Button variant="success" onClick={()=>this.props.actions.updateAction(cellData)}>Edit</Button>
               <span> </span>
               <Button variant="danger" onClick={()=>this.props.actions.deleteAction(cellData)}>Delete</Button>
+              {this.props.is_restaurant === true?
+              <a href={"/menu/"+cellData} ><Button variant="primary" style={{margin:10 }}>View Menu</Button></a>
+              :""}
+              {this.props.is_menu?
+              <a href={"/dishes/"+cellData}><Button variant="primary" style={{margin:10 }}>View Dishes</Button></a>
+              :""}
             </React.Fragment>, td),
       }],
     });

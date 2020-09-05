@@ -286,7 +286,16 @@ export default function UserList() {
     <>
     {console.log('usersata',userData)}
       {userData.length >0?
-        <DataTableComponent actionCol={4} columns={columns} data={userData} tokenis={globalState.auth.authToken} refreshData={setUpdateData} currentStateRefresh={updateData} actions={actionsList} />:""}
+        <DataTableComponent actionCol={4} columns={columns} data={userData} actions={actionsList} />
+      :
+        <>
+        <Row style={{flexDirection:'row-reverse'}}>
+          <Button vairent="primary" onClick={()=>setShow(true)}>Add</Button>
+        </Row>
+        <hr/>
+        <p style={{textAlign:'center'}}>No Record Found</p>
+        </>
+      }
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Add User</Modal.Title>

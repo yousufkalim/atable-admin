@@ -43,7 +43,7 @@ export default function RestaurantList() {
   const [loader,setLoader] = useState(false);
   // auto complete Library values
   const [values,setValues] = useState([]);
-  const [showImage,setShowImage] = useState('https://posterprintfactory.com/assets/file_placeholder.png');
+  const [showImage,setShowImage] = useState('https://getstamped.co.uk/wp-content/uploads/WebsiteAssets/Placeholder.jpg');
   const [imageFile,setImageFile] = useState(null);
   const [imageError,setImageError] = useState('');
   // model toogler
@@ -71,7 +71,9 @@ export default function RestaurantList() {
           console.log("item",item);
           userDatais.push(
             [
-              `<img style="width:50px;height:50px" src="http://localhost:4000/${item.resturant_image}" alt="resturant Image" />`,
+              item.resturant_image !== undefined && item.resturant_image !==""?
+              `<img style="width:100px;height:100px" src="http://localhost:4000/${item.resturant_image}" alt="resturant Image" />`:
+              `<img style="width:100px;height:100px" src="https://image.freepik.com/free-vector/no-data-concept-illustration_114360-626.jpg" alt="resturant Image" />`,
               item.resturant_name,
               item.resturant_desc,
               moment(item.createdDate).format('ddd MM YYYY HH:mm'),
@@ -178,7 +180,8 @@ export default function RestaurantList() {
       zipCode:'',
       lat:'',
       long:'',
-    })
+    });
+    setShowImage('https://getstamped.co.uk/wp-content/uploads/WebsiteAssets/Placeholder.jpg')
   }
 
   
@@ -262,7 +265,7 @@ export default function RestaurantList() {
   // handle Edit submit (update call.)
   const handleUpdate = () => {
     const {resturant_name,resturant_desc,lat,long,infoId,address,zipCode} = state;
-    debugger;
+    // debugger;
     const formdata = new FormData();
     formdata.append('resturant_name',resturant_name);
     formdata.append('resturant_desc',resturant_desc);
@@ -277,16 +280,15 @@ export default function RestaurantList() {
     for (var key of formdata.entries()) {
       console.log(key[0] + ', ' + key[1]);
     }
-    
-    WebServiceManager.putApiForm(
+
+    WebServiceManager.postApiCallForm(
       {
-        endPoint:'resturants',
-        userID:infoId,
-        dataToUpdate:formdata,
+        endPoint:'resturants/'+infoId,
+        dataToInsert:formdata,
         token:globalState.auth.authToken,
       },
       (statusCode,responseUpdate)=>{
-        debugger;
+        // debugger;
         console.log("updates");
         setShowEdit(false);
         setUpdateData(!updateData);
@@ -344,8 +346,16 @@ export default function RestaurantList() {
   return (
     <>
       {restaurantData.length >0?
-        <DataTableComponent actionCol={4} columns={columns} data={restaurantData} tokenis={globalState.auth.authToken} actions={actionsList} />
-      :""}
+        <DataTableComponent actionCol={4} columns={columns} data={restaurantData} actions={actionsList} is_restaurant={true} />
+      :
+        <>
+        <Row style={{flexDirection:'row-reverse'}}>
+          <Button vairent="primary" onClick={()=>setShow(true)}>Add</Button>
+        </Row>
+        <hr/>
+        <p style={{textAlign:'center'}}>No Record Found</p>
+        </>
+      }
       {/* add modal */}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
@@ -363,7 +373,9 @@ export default function RestaurantList() {
                 style={{display: 'none'}}
               />
             </Col>
-            <small style={{textAlign:'center',fontWeight:'bold',color:'red'}}>**Click On Image to Upload New.**</small>
+            <Col sm={12}>
+              <small style={{textAlign:'center',fontWeight:'bold',color:'red'}}>**Click On Image to Upload New.**</small>
+            </Col>
             <Col md={12}>
               <TextField
                 id="outlined-name"
@@ -384,7 +396,6 @@ export default function RestaurantList() {
                 multiline
                 rows={5}
                 onChange={handleChange}
-                helperText={state.lastNameError}
                 margin="normal"
                 variant="outlined"
               />
@@ -406,7 +417,7 @@ export default function RestaurantList() {
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Choose a country"
+                    label="Address"
                     variant="outlined"
                     value={state.address}
                     onChange={GetAllAdress}
@@ -541,7 +552,6 @@ export default function RestaurantList() {
                   />
                 )}
               />
-              {console.log('state',state.zipCode)}
             </Col>
             <Col md={4}>
               <TextField

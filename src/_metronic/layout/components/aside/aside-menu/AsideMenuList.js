@@ -4,6 +4,12 @@ import {useLocation} from "react-router";
 import {NavLink}  from "react-router-dom";
 import SVG from "react-inlinesvg";
 import {toAbsoluteUrl, checkIsActive} from "../../../../_helpers";
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import ContactsIcon from '@material-ui/icons/Contacts';
+import RestaurantIcon from '@material-ui/icons/Restaurant';
+import MenuBookIcon from '@material-ui/icons/MenuBook';
+import RestaurantMenuIcon from '@material-ui/icons/RestaurantMenu';
+
 
 export function AsideMenuList({ layoutProps }) {
   const location = useLocation();
@@ -24,7 +30,7 @@ export function AsideMenuList({ layoutProps }) {
           >
             <NavLink className="menu-link" to="/dashboard">
             <span className="svg-icon menu-icon">
-              <SVG src={toAbsoluteUrl("/media/svg/icons/Design/dashboard.svg")}/>
+              <DashboardIcon />
             </span>
               <span className="menu-text">Dashboard</span>
             </NavLink>
@@ -36,7 +42,7 @@ export function AsideMenuList({ layoutProps }) {
           >
             <NavLink className="menu-link" to="/user">
             <span className="svg-icon menu-icon">
-              <SVG src={toAbsoluteUrl("/media/svg/icons/Design/team.svg")}/>
+              <ContactsIcon />
             </span>
               <span className="menu-text">Users</span>
             </NavLink>
@@ -48,9 +54,33 @@ export function AsideMenuList({ layoutProps }) {
           >
             <NavLink className="menu-link" to="/restaurant">
             <span className="svg-icon menu-icon">
-              <SVG src={toAbsoluteUrl("/media/svg/icons/Design/kitchen.svg")}/>
+              <RestaurantIcon />
             </span>
               <span className="menu-text">Restaurant</span>
+            </NavLink>
+          </li>
+          {/* Menu Item */}
+          <li
+              className={`menu-item ${getMenuItemActive("/menu/", false)}`}
+              aria-haspopup="true"
+          >
+            <NavLink className="menu-link" to="/menu/">
+            <span className="svg-icon menu-icon">
+              <MenuBookIcon />
+            </span>
+              <span className="menu-text">Menu</span>
+            </NavLink>
+          </li>
+          {/* Dishes Managerment */}
+          <li
+              className={`menu-item ${getMenuItemActive("/dishes/", false)}`}
+              aria-haspopup="true"
+          >
+            <NavLink className="menu-link" to="/dishes/">
+            <span className="svg-icon menu-icon">
+              <RestaurantMenuIcon />
+            </span>
+              <span className="menu-text">Dishes</span>
             </NavLink>
           </li>
           {/* Table Management */}
