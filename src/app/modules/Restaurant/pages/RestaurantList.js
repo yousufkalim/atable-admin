@@ -2,8 +2,6 @@ import React,{useState,useEffect, useMemo,useRef} from 'react';
 import {useSelector} from "react-redux";
 // react bootstarp components
 import { Button, Row, Col,Modal } from "react-bootstrap";
-// material ui components
-import {TextField} from "@material-ui/core";
 import Autocomplete from '@material-ui/lab/Autocomplete';
 // -----------------
 
@@ -11,6 +9,15 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import DataTableComponent from "../../Table/pages/DataTableComponent.jsx";
 import WebServicesManager from "../../../../WebServiceManager/WebServicesManager";
 import moment from "moment";
+
+// icons form material ui
+// material ui components
+import {TextField, InputAdornment, IconButton} from "@material-ui/core";
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
 
 
 export default function RestaurantList() {
@@ -27,6 +34,9 @@ export default function RestaurantList() {
     lat:'',
     long:'',
     addressError:'',
+    // password
+    password:"",
+    passwordError:"",
   });
 
   const columns = [
@@ -37,6 +47,11 @@ export default function RestaurantList() {
     {title:'Actions'},
   
   ];
+
+  const [showPasswordField,setShowPasswordField] = useState(false);
+  const [oldPass,setOldPass] = useState("");
+  // password view toogles state
+  const [typeis,setTypeis] = useState('password');
 
   const [restaurantData,setRestaurantData] = useState([]);
   const [updateData,setUpdateData] = useState(false);
@@ -49,6 +64,7 @@ export default function RestaurantList() {
   // model toogler
   const [show,setShow] = useState(false);
   const [showEdit,setShowEdit] = useState(false);
+  const [showDish,setShowDish] = useState(false);
   // disables button toogles
   const [btnDisabled,setBtnDisabled]  = useState(true);
   // global state from redux
@@ -152,8 +168,8 @@ export default function RestaurantList() {
 
   // handle button disable function
   const handleBtnDisables = () => {
-    const {resturant_name,resturant_desc,lat,long,addressError} = state;
-    if(resturant_name !== "" && resturant_desc !=="" && lat !==""&& long !==""){
+    const {resturant_name,resturant_desc,lat,long,addressError,password} = state;
+    if(resturant_name !== "" && resturant_desc !=="" && lat !==""&& long !=="" && password !==""){
       if(addressError === ""){ 
         if(imageFile !== null || state.infoId !== ""){
           setImageError('');
@@ -180,8 +196,14 @@ export default function RestaurantList() {
       zipCode:'',
       lat:'',
       long:'',
+      // password
+      password:"",
+      passwordError:"",
     });
+    setShowPasswordField(false);
+    setTypeis('password');
     setShowImage('https://getstamped.co.uk/wp-content/uploads/WebsiteAssets/Placeholder.jpg')
+    
   }
 
   
@@ -205,7 +227,7 @@ export default function RestaurantList() {
 
   // handle add new record
   const handleAdd = () =>{
-    const {resturant_name,resturant_desc,lat,long,address,zipCode} = state;
+    const {resturant_name,resturant_desc,lat,long,address,zipCode,password} = state;
     const form = new FormData();
     form.append('resturant_name',resturant_name);
     form.append('resturant_desc',resturant_desc);
@@ -213,6 +235,7 @@ export default function RestaurantList() {
     form.append('resturant_lng',long);
     form.append('resturant_address',address);
     form.append('resturant_zipCode',zipCode);
+    form.append('password',password);
     if(imageFile !== null){
       form.append('resturant_image',imageFile,imageFile.name);
     }
@@ -252,6 +275,7 @@ export default function RestaurantList() {
         stateUpdate.lat = responseUser.resturant_lat;
         stateUpdate.long = responseUser.resturant_lng;
         stateUpdate.infoId = id;
+        stateUpdate.password = responseUser.password !== undefined?responseUser.password:"";
         setState(stateUpdate);
         setShowImage("http://localhost:4000/"+responseUser.resturant_image)
         setShowEdit(true);
@@ -264,7 +288,7 @@ export default function RestaurantList() {
 
   // handle Edit submit (update call.)
   const handleUpdate = () => {
-    const {resturant_name,resturant_desc,lat,long,infoId,address,zipCode} = state;
+    const {resturant_name,resturant_desc,lat,long,infoId,address,zipCode,password} = state;
     // debugger;
     const formdata = new FormData();
     formdata.append('resturant_name',resturant_name);
@@ -273,12 +297,9 @@ export default function RestaurantList() {
     formdata.append('resturant_lng',long);
     formdata.append('resturant_address',address);
     formdata.append('resturant_zipCode',zipCode);
+    formdata.append('password',password);
     if(imageFile !== null){
       formdata.append('resturant_image',imageFile,imageFile.name);
-    }
-
-    for (var key of formdata.entries()) {
-      console.log(key[0] + ', ' + key[1]);
     }
 
     WebServiceManager.postApiCallForm(
@@ -343,6 +364,28 @@ export default function RestaurantList() {
     };
   }
 
+  // toogle view
+  const handleToogle = ()=> {
+    typeis === "password"?setTypeis('text'):setTypeis('password');
+  }
+
+  // handle Show Password
+  const handleShowPassword = () => {
+    setShowPasswordField(!showPasswordField);
+    if(showPasswordField !== true){
+      setOldPass(state.password);
+      var stateUpdate = state;
+      stateUpdate.password = "";
+      setState(stateUpdate);
+      handleBtnDisables();
+    }else{
+      var stateUpdate = state;
+      stateUpdate.password = oldPass;
+      setState(stateUpdate);
+      setOldPass("");
+    }
+  }
+
   return (
     <>
       {restaurantData.length >0?
@@ -385,6 +428,33 @@ export default function RestaurantList() {
                 onChange={handleChange}
                 variant="outlined"
                 margin="normal"
+              />
+            </Col>
+            <Col md={12}>
+              <TextField
+                id="outlined-password"
+                label="Password"
+                type={typeis}
+                value={state.password}
+                name={"password"}
+                onChange={handleChange}
+                margin="normal"
+                helperText={state.passwordError}
+                variant="outlined"
+                // this is where visible button will be added
+                InputProps={{ // <-- This is where the toggle button is added.
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleToogle}
+                        onMouseDown={handleToogle}
+                      >
+                        {typeis === 'password' ? <VisibilityIcon/> : <VisibilityOffIcon/> }
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
               />
             </Col>
             <Col md={12}>
@@ -509,6 +579,44 @@ export default function RestaurantList() {
                 margin="normal"
               />
             </Col>
+            <Col sm={12}>
+              <FormGroup row>
+                <FormControlLabel
+                  control={<Checkbox checked={showPasswordField} onChange={handleShowPassword} name="showPassword" />}
+                  label="Change Password"
+                />
+              </FormGroup>
+            </Col>
+            {showPasswordField===true?
+              <Col md={12}>
+                <TextField
+                  id="outlined-password-update"
+                  label="Password"
+                  type={typeis}
+                  value={state.password}
+                  name="password"
+                  onChange={handleChange}
+                  margin="normal"
+                  helperText={state.passwordError}
+                  variant="outlined"
+                  // this is where visible button will be added
+                  InputProps={{ // <-- This is where the toggle button is added.
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={handleToogle}
+                          onMouseDown={handleToogle}
+                        >
+                          {typeis === 'password' ? <VisibilityIcon/> : <VisibilityOffIcon/> }
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
+                />
+              </Col>:
+              ""
+            }
             <Col md={12}>
               <TextField
                 id="outlined-desc"

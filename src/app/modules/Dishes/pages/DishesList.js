@@ -1,10 +1,14 @@
 import React,{useState,useEffect, useMemo,useRef} from 'react';
 import {useSelector} from "react-redux";
+import {useParams} from "react-router-dom";
 // react bootstarp components
 import { Button, Row, Col,Modal } from "react-bootstrap";
+
 // material ui components
 import {TextField} from "@material-ui/core";
+import ChipInput from 'material-ui-chip-input'
 import Autocomplete from '@material-ui/lab/Autocomplete';
+
 // -----------------
 
 // required imports....
@@ -17,6 +21,10 @@ export default function DishesList() {
 
   //  reffeance for input field
   const hiddenFileInput  = useRef(null);
+  const {menu_id} = useParams();
+
+  console.log(menu_id)
+
   const [state, setState] = React.useState({
     infoId:"",
     dish_name:"",
@@ -31,16 +39,23 @@ export default function DishesList() {
 
   const columns = [
     {title:'Image'},
-    { title: 'Resturant Name' },
+    { title: 'Dish Name' },
     { title: 'Description'},
+    { title: 'Restaurant'},
+    { title: 'Price'},
+    { title: 'Tags'},
+    { title: 'Rating'},
+    { title: 'Distance'},
     {title: 'Date Of Created'},
     {title:'Actions'},
   
   ];
 
   const [restaurantData,setRestaurantData] = useState([]);
+  const [yourChips,setYourChips] = useState([]);
   const [updateData,setUpdateData] = useState(false);
   const [loader,setLoader] = useState(false);
+  const [restaurantListis,setRestaurantListis] = useState([]);
 
   const [showImage,setShowImage] = useState('https://posterprintfactory.com/assets/file_placeholder.png');
   const [imageFile,setImageFile] = useState(null);
@@ -55,9 +70,63 @@ export default function DishesList() {
   // api webservice
   const WebServiceManager = useMemo(() => new WebServicesManager(), []);
 
+
+  // userEffect if tag changes
+
+  useEffect(() => {
+    console.log("Tag |Chnage")
+  }, [yourChips])
+
+  // load add resturent name
+  useEffect(()=>{
+    let restaurantList = [];
+    WebServiceManager.getApiCall({
+      endPoint:'resturants',
+      token:globalState.auth.authToken
+    },(statusCode,responseRest)=>{
+      console.log('sasa',responseRest);
+      responseRest.map(item=>{
+        restaurantList.push({id:item.id,name:item.resturant_name});
+      })
+      setRestaurantListis(restaurantList)
+    });
+    if(menu_id !== "error" && menu_id !== undefined){
+      const stateUpdate = state;
+      // if user is redirected from resturant table it automaticaly set state to it's id
+      stateUpdate.resturant_id = menu_id;
+      setState(stateUpdate);
+    }
+  },[])
+
+
+  function convertStringToList(elm){
+    elm = elm.split('')
+    elm = elm.filter(e=> e !=='[' && e!=="'" && e!=="]")
+    var b='';
+    var c = []
+    elm.map(item=>{
+      if(item === ','){
+        c.push(b);
+        b=''
+      } else {
+        b= b+item;
+      }
+    })
+    c.push(b);
+
+    return c;
+    
+  }
+
   useEffect(()=>{
     setRestaurantData([]);
-    fetch('http://localhost:4000/dishs/',{
+    var SendUrl = "";
+    if(menu_id !== "error" && menu_id !== undefined){
+      SendUrl = 'http://localhost:4000/dishs/restaurant/'+menu_id;
+    }else{
+      SendUrl = 'http://localhost:4000/dishs/';
+    }
+    fetch(SendUrl,{
       mathod:'GET',
       headers:{
         'content-type':'application/json',
@@ -65,14 +134,21 @@ export default function DishesList() {
       }
     }).then(res => res.json())
     .then(responseJson => {
+      console.log('res',responseJson)
       var userDatais = [];
-      responseJson.map(item=> {
-          console.log("item",item);
+      responseJson.users.map(item=> {
           userDatais.push(
             [
-              `<img style="width:50px;height:50px" src="http://localhost:4000/${item.rating}" alt="resturant Image" />`,
+              item.dish_images.length >0?
+              `<img style="width:100px;height:100px" src="http://localhost:4000/${item.dish_images[0]}" alt="resturant Image" />`:
+              `<img style="width:100px;height:100px" src="https://image.freepik.com/free-vector/no-data-concept-illustration_114360-626.jpg" alt="resturant Image" />`,
               item.dish_name,
               item.dish_description,
+              item.resturant_id.resturant_name, 
+              item.price,
+              convertStringToList(item.tags[0]),
+              item.rating !==undefined?item.rating:0,
+              item.distance !== undefined ? item.distance:0,
               moment(item.createdDate).format('ddd MM YYYY HH:mm'),
               item.id
             ]
@@ -87,18 +163,14 @@ export default function DishesList() {
 
   // handle button disable function
   const handleBtnDisables = () => {
-    const {dish_name,dish_description,lat,long,addressError} = state;
-    if(dish_name !== "" && dish_description !=="" && lat !==""&& long !==""){
-      if(addressError === ""){ 
-        if(imageFile !== null || state.infoId !== ""){
-          setImageError('');
-          setBtnDisabled(false);
-        }else{
-          setBtnDisabled(true);
-          setImageError('This Field is required')
-        }
+    const {dish_name,dish_description,price,resturant_id} = state;
+    if(dish_name !== "" && dish_description !=="" && price !=="" && resturant_id !== ""){ 
+      if(imageFile !== null || state.infoId !== ""){
+        setImageError('');
+        setBtnDisabled(false);
       }else{
         setBtnDisabled(true);
+        setImageError('This Field is required')
       }
     }else{
       setBtnDisabled(true);
@@ -107,6 +179,11 @@ export default function DishesList() {
 
   //  reset state data
   const handleResetState = () => {
+    if(menu_id !== "error" && menu_id !== undefined){
+      var rest_id = menu_id;
+    }else{
+      var rest_id = ''
+    }
     setState({
       infoId:"",
       dish_name:"",
@@ -116,9 +193,10 @@ export default function DishesList() {
       dish_type:[],
       price:'',
       tags:[],
-      resturant_id:'',
+      resturant_id:rest_id,
     });
     setImageFile('https://posterprintfactory.com/assets/file_placeholder.png');
+    setYourChips([]);
   }
 
   
@@ -142,20 +220,20 @@ export default function DishesList() {
 
   // handle add new record
   const handleAdd = () =>{
-    const {dish_name,dish_description,lat,long,address,zipCode} = state;
+    const {dish_name,dish_description,price,resturant_id} = state;
     const form = new FormData();
     form.append('dish_name',dish_name);
     form.append('dish_description',dish_description);
-    form.append('resturant_lat',lat);
-    form.append('resturant_lng',long);
-    form.append('resturant_address',address);
-    form.append('resturant_zipCode',zipCode);
+    form.append('price',String(price));
+    form.append('tags',yourChips);
+    console.log('res on send',resturant_id)
+    form.append('resturant_id',resturant_id);
     if(imageFile !== null){
-      form.append('rating',imageFile,imageFile.name);
+      form.append('dish_images',imageFile,imageFile.name);
     }
     WebServiceManager.postApiCallForm(
       {
-        endPoint:'resturants/register',
+        endPoint:'dishs/register',
         dataToInsert:form,
         token:globalState.auth.authToken,
       },
@@ -177,20 +255,27 @@ export default function DishesList() {
     var stateUpdate = state;
     WebServiceManager.getApiWithParamCall(
       {
-        endPoint:'resturants',
+        endPoint:'dishs',
         dataToFetch:id,
         token:globalState.auth.authToken,
       },
       (statusCode,responseUser)=>{
         stateUpdate.dish_name = responseUser.dish_name;
         stateUpdate.dish_description = responseUser.dish_description;
-        stateUpdate.address  = responseUser.resturant_address;
-        stateUpdate.zipCode = responseUser.resturant_zipCode;
-        stateUpdate.lat = responseUser.resturant_lat;
-        stateUpdate.long = responseUser.resturant_lng;
+        stateUpdate.tags  = convertStringToList(responseUser.tags[0]);
+        stateUpdate.price = responseUser.price;
+        stateUpdate.distance = responseUser.distance;
+        stateUpdate.rating = responseUser.rating;
         stateUpdate.infoId = id;
+        stateUpdate.dish_type = responseUser.dish_type;
+        stateUpdate.resturant_id = responseUser.resturant_id;
         setState(stateUpdate);
-        setShowImage("http://localhost:4000/"+responseUser.rating)
+        if(responseUser.dish_images.length >0){
+        setShowImage("http://localhost:4000/"+responseUser.dish_images[0]);
+        }else{
+          setShowImage('https://posterprintfactory.com/assets/file_placeholder.png');
+        }
+        setYourChips(convertStringToList(responseUser.tags[0]))
         setShowEdit(true);
         handleBtnDisables();
         console.log("State before",state);
@@ -200,28 +285,24 @@ export default function DishesList() {
   }
 
   // handle Edit submit (update call.)
-  const handleUpdate = () => {
-    const {dish_name,dish_description,lat,long,infoId,address,zipCode} = state;
-    // debugger;
+  const handleUpdate = () => {  
+    const {dish_name,dish_description,price,infoId} = state;
     const formdata = new FormData();
     formdata.append('dish_name',dish_name);
     formdata.append('dish_description',dish_description);
-    formdata.append('resturant_lat',lat);
-    formdata.append('resturant_lng',long);
-    formdata.append('resturant_address',address);
-    formdata.append('resturant_zipCode',zipCode);
+    formdata.append('resturant_id',menu_id);
+    formdata.append('price',String(price));
+    formdata.append('tags',yourChips);
     if(imageFile !== null){
-      formdata.append('rating',imageFile,imageFile.name);
+      formdata.append('dish_images',imageFile,imageFile.name);
     }
 
-    for (var key of formdata.entries()) {
-      console.log(key[0] + ', ' + key[1]);
-    }
 
-    WebServiceManager.postApiCallForm(
+    WebServiceManager.putApiForm(
       {
-        endPoint:'resturants/'+infoId,
-        dataToInsert:formdata,
+        endPoint:'dishs',
+        dataToUpdate:formdata,
+        userID:infoId,
         token:globalState.auth.authToken,
       },
       (statusCode,responseUpdate)=>{
@@ -241,7 +322,7 @@ export default function DishesList() {
     if(confirmis === true){
       WebServiceManager.DeleteApiInURL(
         {
-          endPoint:'resturants',
+          endPoint:'dishs',
           dataToDelete:id,
           token:globalState.auth.authToken
         },
@@ -280,10 +361,36 @@ export default function DishesList() {
     };
   }
 
+  const handleAddChip = (chip) => {
+    console.log('chip',chip)
+    setYourChips([...yourChips,chip])
+  }
+  const handleDeleteChip = (chip,index) => {
+    // Remove item 'seven' from array
+    var delArray = yourChips.filter(function(e) { return e !== chip })
+    setYourChips(delArray);
+  }
+
+
+  const SetAddress = async item => {
+    console.log("item",item.target.textContent )
+    const selectedItem = item.target.textContent;
+    for(var i=0;i<restaurantListis.length;i++){
+      if(restaurantListis[i].name === selectedItem){
+        var stateUpdate = state;
+        stateUpdate.resturant_id = restaurantListis[i].id;
+        await setState(stateUpdate);
+        console.log('New',state);
+        // dummy state to update fields 
+        setLoader(!loader);
+        handleBtnDisables();
+      }
+    }
+  };
   return (
     <>
       {restaurantData.length >0?
-        <DataTableComponent actionCol={4} columns={columns} data={restaurantData} actions={actionsList} />
+        <DataTableComponent actionCol={9} columns={columns} data={restaurantData} actions={actionsList} />
       :
         <>
         <Row style={{flexDirection:'row-reverse'}}>
@@ -296,7 +403,7 @@ export default function DishesList() {
       {/* add modal */}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Add Restaurant</Modal.Title>
+          <Modal.Title>Add Dish</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Row>
@@ -306,6 +413,7 @@ export default function DishesList() {
               <input
                 type="file"
                 ref={hiddenFileInput}
+                multiple
                 onChange={handleChangeImage}
                 style={{display: 'none'}}
               />
@@ -314,7 +422,7 @@ export default function DishesList() {
             <Col md={12}>
               <TextField
                 id="outlined-name"
-                label="Restaurant Name"
+                label="Dish Name"
                 name="dish_name"
                 value={state.dish_name}
                 onChange={handleChange}
@@ -336,75 +444,50 @@ export default function DishesList() {
                 variant="outlined"
               />
             </Col>
-            <Col md={12}>
-              {/* <Autocomplete
-                id="country-select-demo"
-                options={values}
-                style={{ marginTop: 15 }}
-                autoHighlight
-                getOptionLabel={(option) => option.label}
-                autoSelect
-                onChange={SetAddress}
-                renderOption={(option) => (
-                  <React.Fragment>
-                    {option.label}
-                  </React.Fragment>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Address"
-                    variant="outlined"
-                    value={state.address}
-                    onChange={GetAllAdress}
-                    helperText={state.addressError}
-                    inputProps={{
-                      ...params.inputProps,
-                      autoComplete: 'new-password', // disable autocomplete and autofill
-                    }}
-                  />
-                )}
-              /> */}
+            <Col md={12} style={{margin:'10px 0px'}}>
+              <ChipInput
+                fullWidth={true}
+                label="Dish Tags"
+                helperText="Tags for dish"
+                value={yourChips}
+                defaultValue={['foo', 'bar']}
+                onAdd={(chip) => handleAddChip(chip)}
+                onDelete={(chip, index) => handleDeleteChip(chip, index)}
+                variant="outlined"
+              />
             </Col>
-            <Col md={4}>
+            <Col md={menu_id === 'error'?6:12}>
               <TextField
                 id="outlined-zip"
-                label="ZIPCODE"
-                type="text"
-                value={state.zipCode}
-                name="zipCode"
+                label="Price"
+                type="number"
+                value={state.price}
+                name="price"
                 onChange={handleChange}
                 margin="normal"
                 variant="outlined"
-                disabled={true}
               />
             </Col>
-            <Col md={4}>
-              <TextField
-                id="outlined-lat"
-                label="Latitude"
-                type="text"
-                value={state.lat}
-                name="lat"
-                onChange={handleChange}
-                margin="normal"
-                variant="outlined"
-                disabled={true}
+            {/* only show if restaurant is not picked automaticaly */}
+            {menu_id === 'error'?
+            <Col md={6}>
+              <Autocomplete
+                id="combo-box-demo"
+                options={restaurantListis}
+                getOptionLabel={(option) => option.name}
+                style={{ marginTop: 15 }}
+                onChange={SetAddress}
+                renderInput={
+                  (params) => 
+                    <TextField 
+                      {...params} 
+                      label="Restaurant" 
+                      variant="outlined" 
+                    />
+                }
               />
             </Col>
-            <Col md={4}>
-              <TextField
-                id="outlined-long"
-                label="Longitude"
-                type="text"
-                value={state.long}
-                name="long"
-                onChange={handleChange}
-                margin="normal"
-                variant="outlined"
-                disabled={true}
-              />
-            </Col>
+            :""}
           </Row>
         </Modal.Body>
         <Modal.Footer>
@@ -412,14 +495,14 @@ export default function DishesList() {
             Close
           </Button>
           <Button variant="primary" disabled={btnDisabled} onClick={handleAdd}>
-            Add Restaurant
+            Add Dish
           </Button>
         </Modal.Footer>
       </Modal>
       {/* edit modal */}
       <Modal show={showEdit} onHide={handleCloseEdit}>
         <Modal.Header closeButton>
-          <Modal.Title>Update Restaurant</Modal.Title>
+          <Modal.Title>Update Dish</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Row>
@@ -437,7 +520,7 @@ export default function DishesList() {
             <Col md={12}>
               <TextField
                 id="outlined-name"
-                label="Restaurant Name"
+                label="Dish Name"
                 name="dish_name"
                 value={state.dish_name}
                 onChange={handleChange}
@@ -454,68 +537,35 @@ export default function DishesList() {
                 multiline
                 rows={5}
                 onChange={handleChange}
-                helperText={state.lastNameError}
                 margin="normal"
+                variant="outlined"
+              />
+            </Col>
+            <Col md={12} style={{margin:'10px 0px'}}>
+              <ChipInput
+                fullWidth={true}
+                label="Dish Tags"
+                helperText="Tags for dish"
+                value={yourChips}
+                defaultValue={['foo', 'bar']}
+                onAdd={(chip) => handleAddChip(chip)}
+                onDelete={(chip, index) => handleDeleteChip(chip, index)}
                 variant="outlined"
               />
             </Col>
             <Col md={12}>
-              {/* <Autocomplete
-                id="country-select-demo"
-                options={values}
-                style={{ marginTop: 15 }}
-                autoHighlight
-                getOptionLabel={(option) => option.label}
-                autoSelect
-                onChange={SetAddress}
-                renderOption={(option) => (
-                  <React.Fragment>
-                    {option.label}
-                  </React.Fragment>
-                )}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Address"
-                    variant="outlined"
-                    value={state.address}
-                    onChange={GetAllAdress}
-                    helperText={state.addressError}
-                    inputProps={{
-                      ...params.inputProps,
-                      autoComplete: 'new-password', // disable autocomplete and autofill
-                    }}
-                  />
-                )}
-              />
-            </Col>
-            <Col md={4}>
               <TextField
                 id="outlined-zip"
-                label="ZipCode"
-                type="text"
-                value={state.zipCode}
-                name="zipCode"
+                label="Price"
+                type="number"
+                value={state.price}
+                name="price"
                 onChange={handleChange}
                 margin="normal"
                 variant="outlined"
-                disabled={true}
-              /> */}
-            </Col>
-            <Col md={4}>
-              <TextField
-                id="outlined-lat"
-                label="Latitude"
-                type="text"
-                value={state.lat}
-                name="lat"
-                onChange={handleChange}
-                margin="normal"
-                variant="outlined"
-                disabled={true}
               />
             </Col>
-            <Col md={4}>
+            {/* <Col md={4}>
               <TextField
                 id="outlined-long"
                 label="Longitude"
@@ -527,7 +577,7 @@ export default function DishesList() {
                 variant="outlined"
                 disabled={true}
               />
-            </Col>
+            </Col> */}
           </Row>
         </Modal.Body>
         <Modal.Footer>
@@ -535,7 +585,7 @@ export default function DishesList() {
             Close
           </Button>
           <Button variant="primary" disabled={btnDisabled} onClick={handleUpdate}>
-            Updates Restaurant
+            Update Dish
           </Button>
         </Modal.Footer>
       </Modal>

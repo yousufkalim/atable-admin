@@ -2,10 +2,12 @@
 import React from "react";
 import SVG from "react-inlinesvg";
 import { useHistory } from "react-router-dom";
+import {useSelector} from "react-redux";
 import {toAbsoluteUrl} from "../../../../_helpers";
 
 export function QuickUser() {
   const history = useHistory();
+  const {user} = useSelector(state => state.auth);
 
   const logoutClick = () => {
       const toggle = document.getElementById("kt_quick_user_toggle");
@@ -50,9 +52,9 @@ export function QuickUser() {
                   href="#"
                   className="font-weight-bold font-size-h5 text-dark-75 text-hover-primary"
               >
-                James Jones
+                {`${user.firstName} ${user.lastName}`}
               </a>
-              <div className="text-muted mt-1">Application Developer</div>
+              <div className="text-muted mt-1">Admin</div>
               <div className="navi mt-2">
                 <a href="#" className="navi-item">
                 <span className="navi-link p-0 pb-2">
@@ -66,7 +68,7 @@ export function QuickUser() {
                     </span>
                   </span>
                   <span className="navi-text text-muted text-hover-primary">
-                    jm@softplus.com
+                    {user.email}
                   </span>
                 </span>
                 </a>
