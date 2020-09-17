@@ -31,7 +31,7 @@ export default function DishesList() {
   });
 
   const columns = [
-    { title: 'Resturant Name' },
+    { title: 'Restaurant Name' },
     { title: 'Table Number'},
     { title: 'Table Number'},
     {title: 'Date Of Created'},
@@ -39,7 +39,7 @@ export default function DishesList() {
   
   ];
 
-  const [restaurantData,setRestaurantData] = useState([]);
+  const [tableData,setTableData] = useState([]);
   const [updateData,setUpdateData] = useState(false);
   const [restaurantListis,setRestaurantListis] = useState([]);
   const [loader,setLoader] = useState(false);
@@ -78,7 +78,7 @@ export default function DishesList() {
 // populate data on load and on list change
 
   useEffect(()=>{
-    setRestaurantData([]);
+    setTableData([]);
     var SendUrl = "";
     if(rest_id !== "error" && rest_id !== undefined){
       SendUrl = 'http://localhost:4000/tables/restaurant/'+rest_id;
@@ -93,6 +93,7 @@ export default function DishesList() {
       }
     }).then(res => res.json())
     .then(responseJson => {
+      debugger;
       var userDatais = [];
       responseJson.tableData.map(item=> {
           userDatais.push(
@@ -106,7 +107,7 @@ export default function DishesList() {
           );        
         }  
       );
-      setRestaurantData(userDatais);
+      setTableData(userDatais);
     })
     .catch(error=>console.log("error",error));
   },[updateData]);
@@ -258,7 +259,8 @@ export default function DishesList() {
         token:globalState.auth.authToken,
       },
       (statusCode,responseUser)=>{
-        setQRInfo(responseUser);
+        debugger;
+        setQRInfo({tableNumber:responseUser.table_number,tableUrl:responseUser.table_url,resturantName:responseUser.resturant_id.resturant_name});
         setShowQR(true);
       }
     )
@@ -289,8 +291,8 @@ export default function DishesList() {
 
   return (
     <>
-      {restaurantData.length >0?
-        <DataTableComponent actionCol={4} columns={columns} data={restaurantData} actions={actionsList} qr_generate={true} />
+      {tableData.length >0?
+        <DataTableComponent actionCol={4} columns={columns} data={tableData} actions={actionsList} qr_generate={true} />
       :
         <>
         <Row style={{flexDirection:'row-reverse'}}>
@@ -412,13 +414,13 @@ export default function DishesList() {
           {qrInfo !== null?
             <>
               <Row>
-                <b>Resturent = </b>{qrInfo.resturant_id.resturant_name}
+                <b>Resturent = </b>{qrInfo.resturantName}
               </Row>
               <Row>
-                <b>Table Number = </b>{qrInfo.table_number}
+                <b>Table Number = </b>{qrInfo.tableNumber}
               </Row>
               <Row>
-                <b>Table URL = </b>{qrInfo.table_url}
+                <b>Table URL = </b>{qrInfo.tableUrl}
               </Row>
               <Row id="qr-row">
                 {/* <QRCode value={qrInfo.table_url} size={200}/> */}
@@ -427,7 +429,7 @@ export default function DishesList() {
                     fgColor="#000000"
                     level="Q"
                     style={{ width: 256 }}
-                    value={qrInfo.table_url}
+                    value={JSON.stringify(qrInfo)}
                 />
               </Row>
             </>

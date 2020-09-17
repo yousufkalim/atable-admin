@@ -136,18 +136,18 @@ export function AsideMenuList({ layoutProps }) {
                     <span className="menu-text">Table Management</span>
                   </NavLink>
                 </li>
-                {/* Menu Item */}
-                {/* <li
-                    className={`menu-item ${getMenuItemActive("/menu/", false)}`}
+                {/* Cuisines */}
+                <li
+                    className={`menu-item ${getMenuItemActive("/cuisines", false)}`}
                     aria-haspopup="true"
                 >
-                  <NavLink className="menu-link" to="/menu/">
+                  <NavLink className="menu-link" to="/cuisines">
                   <span className="svg-icon menu-icon">
                     <MenuBookIcon />
                   </span>
-                    <span className="menu-text">Menu</span>
+                    <span className="menu-text">Cuisines</span>
                   </NavLink>
-                </li> */}
+                </li>
               </ul>
             </div>
           </li>
@@ -164,7 +164,7 @@ export function AsideMenuList({ layoutProps }) {
               <span className="menu-text">Orders</span>
             </NavLink>
           </li>
-          {/* carts */}
+          {/* carts
           <li
               className={`menu-item ${getMenuItemActive("/cart", false)}`}
               aria-haspopup="true"
@@ -175,7 +175,7 @@ export function AsideMenuList({ layoutProps }) {
             </span>
               <span className="menu-text">Cart</span>
             </NavLink>
-          </li>
+          </li> */}
         </ul>
 
         {/* end::Menu Nav */}

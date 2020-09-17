@@ -7,7 +7,7 @@ import { Button, Row, Col,Modal } from "react-bootstrap";
 // material ui components
 import {TextField} from "@material-ui/core";
 import ChipInput from 'material-ui-chip-input'
-import Autocomplete from '@material-ui/lab/Autocomplete';
+import Autocomplete, { createFilterOptions } from '@material-ui/lab/Autocomplete';
 
 // -----------------
 
@@ -22,6 +22,7 @@ export default function DishesList() {
   //  reffeance for input field
   const hiddenFileInput  = useRef(null);
   const {menu_id} = useParams();
+  const filter = createFilterOptions();
 
   console.log(menu_id)
 
@@ -30,7 +31,7 @@ export default function DishesList() {
     dish_name:"",
     dish_description:"",
     rating:"",
-    distance:'',
+    cuisine:'',
     dish_type:[],
     price:'',
     tags:[],
@@ -45,7 +46,7 @@ export default function DishesList() {
     { title: 'Price'},
     { title: 'Tags'},
     { title: 'Rating'},
-    { title: 'Distance'},
+    { title: 'Cuisine'},
     {title: 'Date Of Created'},
     {title:'Actions'},
   
@@ -54,8 +55,12 @@ export default function DishesList() {
   const [restaurantData,setRestaurantData] = useState([]);
   const [yourChips,setYourChips] = useState([]);
   const [updateData,setUpdateData] = useState(false);
+  const [updateList,setUpdateList] = useState(false);
   const [loader,setLoader] = useState(false);
   const [restaurantListis,setRestaurantListis] = useState([]);
+  const [dishList,setDishList] = useState([]);
+  const [dishTypeList,setDishTypeList] = useState([]);
+  const [cuisineList,setCuisineList] = useState([]);
 
   const [showImage,setShowImage] = useState('https://posterprintfactory.com/assets/file_placeholder.png');
   const [imageFile,setImageFile] = useState(null);
@@ -77,18 +82,54 @@ export default function DishesList() {
     console.log("Tag |Chnage")
   }, [yourChips])
 
-  // load add resturent name
+  // load add dropdown data name
   useEffect(()=>{
     let restaurantList = [];
+    let dishListis = [];
+    let dishTypeis = [];
+    let cuisineTypeIs = [];
+    // restaurants
     WebServiceManager.getApiCall({
       endPoint:'resturants',
       token:globalState.auth.authToken
     },(statusCode,responseRest)=>{
-      console.log('sasa',responseRest);
       responseRest.map(item=>{
         restaurantList.push({id:item.id,name:item.resturant_name});
       })
       setRestaurantListis(restaurantList)
+    });
+    // dishList
+    WebServiceManager.getApiCall({
+      endPoint:'dishList',
+      token:globalState.auth.authToken
+    },(statusCode,responseRest)=>{
+      responseRest.map(item=>{
+        if(item.activeApproved === true){
+          dishListis.push({value:item.name});
+        }
+      })
+      setDishList(dishListis);
+    });
+    // dishType List
+    WebServiceManager.getApiCall({
+      endPoint:'dishType',
+      token:globalState.auth.authToken
+    },(statusCode,responseRest)=>{
+      responseRest.users.map(item=>{
+        dishTypeis.push({id:item.id,name:item.name});
+      })
+      setDishTypeList(dishTypeis);
+    });
+
+    // cuisine Type
+    WebServiceManager.getApiCall({
+      endPoint:'cuisine',
+      token:globalState.auth.authToken
+    },(statusCode,responseRest)=>{
+      responseRest.cuisineList.map(item=>{
+        cuisineTypeIs.push({id:item.id,name:item.name});
+      })
+      setCuisineList(cuisineTypeIs);
     });
     if(menu_id !== "error" && menu_id !== undefined){
       const stateUpdate = state;
@@ -96,7 +137,7 @@ export default function DishesList() {
       stateUpdate.resturant_id = menu_id;
       setState(stateUpdate);
     }
-  },[])
+  },[updateList])
 
 
   function convertStringToList(elm){
@@ -148,7 +189,7 @@ export default function DishesList() {
               item.price,
               convertStringToList(item.tags[0]),
               item.rating !==undefined?item.rating:0,
-              item.distance !== undefined ? item.distance:0,
+              item.cuisine_type !== undefined ? item.cuisine_type.name:'Not Defined',
               moment(item.createdDate).format('ddd MM YYYY HH:mm'),
               item.id
             ]
@@ -189,7 +230,7 @@ export default function DishesList() {
       dish_name:"",
       dish_description:"",
       rating:"",
-      distance:'',
+      cuisine:'',
       dish_type:[],
       price:'',
       tags:[],
@@ -226,7 +267,8 @@ export default function DishesList() {
     form.append('dish_description',dish_description);
     form.append('price',String(price));
     form.append('tags',yourChips);
-    console.log('res on send',resturant_id)
+    form.append('dish_type',state.dish_type);
+    form.append('cuisine_type',state.cuisine);
     form.append('resturant_id',resturant_id);
     if(imageFile !== null){
       form.append('dish_images',imageFile,imageFile.name);
@@ -264,11 +306,11 @@ export default function DishesList() {
         stateUpdate.dish_description = responseUser.dish_description;
         stateUpdate.tags  = convertStringToList(responseUser.tags[0]);
         stateUpdate.price = responseUser.price;
-        stateUpdate.distance = responseUser.distance;
+        stateUpdate.cuisine = responseUser.cuisine_type;
         stateUpdate.rating = responseUser.rating;
         stateUpdate.infoId = id;
         stateUpdate.dish_type = responseUser.dish_type;
-        stateUpdate.resturant_id = responseUser.resturant_id;
+        stateUpdate.resturant_id = responseUser.resturant_id.id;
         setState(stateUpdate);
         if(responseUser.dish_images.length >0){
         setShowImage("http://localhost:4000/"+responseUser.dish_images[0]);
@@ -286,13 +328,16 @@ export default function DishesList() {
 
   // handle Edit submit (update call.)
   const handleUpdate = () => {  
-    const {dish_name,dish_description,price,infoId} = state;
+    const {dish_name,dish_description,price,infoId,resturant_id} = state;
     const formdata = new FormData();
     formdata.append('dish_name',dish_name);
     formdata.append('dish_description',dish_description);
-    formdata.append('resturant_id',menu_id);
+    formdata.append('resturant_id',resturant_id);
     formdata.append('price',String(price));
     formdata.append('tags',yourChips);
+    formdata.append('dish_type',state.dish_type);
+    formdata.append('cuisine_type',state.cuisine);
+
     if(imageFile !== null){
       formdata.append('dish_images',imageFile,imageFile.name);
     }
@@ -387,6 +432,94 @@ export default function DishesList() {
       }
     }
   };
+
+  const SetDishTypeValue = item => {
+    const selectedItem = item.target.textContent;
+    for(var i=0;i<dishTypeList.length;i++){
+      if(dishTypeList[i].name === selectedItem){
+        var stateUpdate = state;
+        stateUpdate.dish_type = dishTypeList[i].id;
+        setState(stateUpdate);
+        // dummy state to update fields 
+        setLoader(!loader);
+        handleBtnDisables();
+      }
+    }
+  }
+
+  const SetCuisineTypeValue = item => {
+    const selectedItem = item.target.textContent;
+    for(var i=0;i<cuisineList.length;i++){
+      if(cuisineList[i].name === selectedItem){
+        var stateUpdate = state;
+        stateUpdate.cuisine = cuisineList[i].id;
+        setState(stateUpdate);
+        // dummy state to update fields 
+        setLoader(!loader);
+        handleBtnDisables();
+      }
+    }
+  }
+
+  //auto complete change 
+  const handleAutoChange = (event,newValue) => {
+    if (typeof newValue === 'string') {
+      // timeout to avoid instant validation of the dialog's form.
+      const info = {
+        name:newValue,
+        activeApproved:true,
+      }
+      WebServiceManager.postApiCall(
+        {
+          endPoint:'dishList/addDishItem',
+          dataToInsert:JSON.stringify(info),
+          token:globalState.auth.authToken,
+        },
+        (statusCode,responseAdd)=>{
+          if(statusCode === "200"){
+            setUpdateList(!updateList)
+            var stateUpdate = state;
+            stateUpdate.dish_name = newValue;
+            setState(stateUpdate);
+            handleBtnDisables();
+          }else{
+            alert("error adding");
+          }
+        }
+      )
+    } else if (newValue && newValue.inputValue) {
+      const info = {
+        name:newValue.inputValue,
+        activeApproved:true,
+      }
+      WebServiceManager.postApiCall(
+        {
+          endPoint:'dishList/addDishItem',
+          dataToInsert:JSON.stringify(info),
+          token:globalState.auth.authToken,
+        },
+        (statusCode,responseAdd)=>{
+          if(statusCode === "200"){
+            setUpdateList(!updateList)
+            var stateUpdate = state;
+            stateUpdate.dish_name = newValue.inputValue;
+            setState(stateUpdate);
+            handleBtnDisables();
+
+          }else{
+            alert("error adding");
+          }
+        }
+      )
+    } else {
+      var stateUpdate = state;
+      stateUpdate.dish_name = newValue.value;
+      setState(stateUpdate);
+      handleBtnDisables();
+    }
+
+  }
+
   return (
     <>
       {restaurantData.length >0?
@@ -420,14 +553,41 @@ export default function DishesList() {
             </Col>
             <small style={{textAlign:'center',fontWeight:'bold',color:'red'}}>**Click On Image to Upload New.**</small>
             <Col md={12}>
-              <TextField
-                id="outlined-name"
-                label="Dish Name"
-                name="dish_name"
+            <Autocomplete
                 value={state.dish_name}
-                onChange={handleChange}
-                variant="outlined"
-                margin="normal"
+                options={dishList}
+                onChange={(event, newValue) => handleAutoChange(event,newValue) }
+                filterOptions={(options, params) => {
+                  const filtered = filter(options, params);
+              
+                  if (params.inputValue !== '') {
+                    filtered.push({
+                      inputValue: params.inputValue,
+                      value: `Add "${params.inputValue}"`,
+                    });
+                  }
+              
+                  return filtered;
+                }}
+                id="free-solo-dialog-demo"
+                getOptionLabel={(option) => {
+                  // e.g value selected with enter, right from the input
+                  if (typeof option === 'string') {
+                    return option;
+                  }
+                  if (option.value) {
+                    return option.value;
+                  }
+                  return option.value;
+                }}
+                selectOnFocus
+                clearOnBlur
+                handleHomeEndKeys
+                renderOption={(option) => option.value}
+                freeSolo
+                renderInput={(params) => (
+                  <TextField {...params} label="Dish Name" variant="outlined" />
+                )}
               />
             </Col>
             <Col md={12}>
@@ -454,6 +614,40 @@ export default function DishesList() {
                 onAdd={(chip) => handleAddChip(chip)}
                 onDelete={(chip, index) => handleDeleteChip(chip, index)}
                 variant="outlined"
+              />
+            </Col>
+            <Col md={12}>
+              <Autocomplete
+                id="combo-box-demo"
+                options={dishTypeList}
+                getOptionLabel={(option) => option.name}
+                style={{ marginTop: 15 }}
+                onChange={SetDishTypeValue}
+                renderInput={
+                  (params) => 
+                    <TextField 
+                      {...params} 
+                      label="Dish Type" 
+                      variant="outlined" 
+                    />
+                }
+              />
+            </Col>
+            <Col md={12}>
+              <Autocomplete
+                id="combo-box-cuisne"
+                options={cuisineList}
+                getOptionLabel={(option) => option.name}
+                style={{ marginTop: 15 }}
+                onChange={SetCuisineTypeValue}
+                renderInput={
+                  (params) => 
+                    <TextField 
+                      {...params} 
+                      label="Cuisine Type" 
+                      variant="outlined" 
+                    />
+                }
               />
             </Col>
             <Col md={menu_id === 'error'?6:12}>
@@ -518,7 +712,43 @@ export default function DishesList() {
             </Col>
             <small style={{textAlign:'center',fontWeight:'bold',color:'red'}}>**Click On Image to Upload New.**</small>
             <Col md={12}>
-              <TextField
+              <Autocomplete
+                value={state.dish_name}
+                options={dishList}
+                onChange={(event, newValue) => handleAutoChange(event,newValue) }
+                filterOptions={(options, params) => {
+                  const filtered = filter(options, params);
+              
+                  if (params.inputValue !== '') {
+                    filtered.push({
+                      inputValue: params.inputValue,
+                      value: `Add "${params.inputValue}"`,
+                    });
+                  }
+              
+                  return filtered;
+                }}
+                id="free-solo-dialog-demo"
+                getOptionLabel={(option) => {
+                  // e.g value selected with enter, right from the input
+                  if (typeof option === 'string') {
+                    return option;
+                  }
+                  if (option.value) {
+                    return option.value;
+                  }
+                  return option.value;
+                }}
+                selectOnFocus
+                clearOnBlur
+                handleHomeEndKeys
+                renderOption={(option) => option.value}
+                freeSolo
+                renderInput={(params) => (
+                  <TextField {...params} label="Dish Name" variant="outlined" />
+                )}
+              />
+              {/* <TextField
                 id="outlined-name"
                 label="Dish Name"
                 name="dish_name"
@@ -526,7 +756,7 @@ export default function DishesList() {
                 onChange={handleChange}
                 variant="outlined"
                 margin="normal"
-              />
+              /> */}
             </Col>
             <Col md={12}>
               <TextField
@@ -551,6 +781,42 @@ export default function DishesList() {
                 onAdd={(chip) => handleAddChip(chip)}
                 onDelete={(chip, index) => handleDeleteChip(chip, index)}
                 variant="outlined"
+              />
+            </Col>
+            <Col md={12}>
+              <Autocomplete
+                id="combo-box-demo"
+                options={dishTypeList}
+                getOptionLabel={(option) => option.name}
+                style={{ marginTop: 15 }}
+                onChange={SetDishTypeValue}
+                defaultValue={state.dish_type}
+                renderInput={
+                  (params) => 
+                    <TextField 
+                      {...params} 
+                      label="Dish Type" 
+                      variant="outlined" 
+                    />
+                }
+              />
+            </Col>
+            <Col md={12}>
+              <Autocomplete
+                id="combo-box-cuisine"
+                options={cuisineList}
+                getOptionLabel={(option) => option.name}
+                style={{ marginTop: 15 }}
+                onChange={SetCuisineTypeValue}
+                defaultValue={state.cuisine}
+                renderInput={
+                  (params) => 
+                    <TextField 
+                      {...params}
+                      label="Cuisine Type" 
+                      variant="outlined" 
+                    />
+                }
               />
             </Col>
             <Col md={12}>
