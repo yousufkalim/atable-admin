@@ -260,7 +260,7 @@ export default function DishesList() {
       },
       (statusCode,responseUser)=>{
         debugger;
-        setQRInfo({tableNumber:responseUser.table_number,tableUrl:responseUser.table_url,resturantName:responseUser.resturant_id.resturant_name});
+        setQRInfo({tableNumber:responseUser.table_number,tableUrl:responseUser.table_url,restaurantName:responseUser.resturant_id.resturant_name,restaurantID:responseUser.resturant_id.id,TableID:responseUser.id});
         setShowQR(true);
       }
     )
