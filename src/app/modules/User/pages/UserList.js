@@ -1,15 +1,15 @@
-import React,{useState,useEffect, useMemo} from 'react';
-import {useSelector} from "react-redux";
+import React, { useState, useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
 // react bootstarp components
-import { Button, Row, Col,Modal } from "react-bootstrap";
+import { Button, Row, Col, Modal } from "react-bootstrap";
 // material ui components
-import {TextField, InputAdornment, IconButton} from "@material-ui/core";
+import { TextField, InputAdornment, IconButton } from "@material-ui/core";
 // icons form material ui
-import VisibilityIcon from '@material-ui/icons/Visibility';
+import VisibilityIcon from "@material-ui/icons/Visibility";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
-import FormGroup from '@material-ui/core/FormGroup';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
+import FormGroup from "@material-ui/core/FormGroup";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@material-ui/core/Checkbox";
 
 // required imports....
 import DataTableComponent from "../../Table/pages/DataTableComponent.jsx";
@@ -19,283 +19,321 @@ import Utilities from "../../../../Utilities/Utilities";
 
 export default function UserList() {
   const [state, setState] = React.useState({
-    infoId:"",
+    infoId: "",
     // first Name
-    firstName:"",
-    firstNameError:"",
+    firstName: "",
+    firstNameError: "",
     // last Name
-    lastName:"",
-    lastNameError:"",
+    lastName: "",
+    lastNameError: "",
     // email
-    email:"",
-    emailError:"",
+    email: "",
+    emailError: "",
     // password
-    password:"",
-    passwordError:"",
+    password: "",
+    passwordError: "",
     // confirm password
     // cPassword:"",
     // cPasswordError:"",
   });
 
   const columns = [
-    { title: 'First Name' },
-    { title: 'Last Name'},
-    { title: 'Email'},
-    {title: 'Date Of Created'},
-    {title:'Actions'},
-  
+    { title: "First Name" },
+    { title: "Last Name" },
+    { title: "Email" },
+    { title: "Date Of Created" },
+    { title: "Actions" },
   ];
 
   // show password for update or not
-  const [showPasswordField,setShowPasswordField] = useState(false);
-  const [oldPass,setOldPass] = useState("");
-  const [userData,setUserData] = useState([]);
-  const [updateData,setUpdateData] = useState(false);
+  const [showPasswordField, setShowPasswordField] = useState(false);
+  const [oldPass, setOldPass] = useState("");
+  const [userData, setUserData] = useState([]);
+  const [updateData, setUpdateData] = useState(false);
   // model toogler
-  const [show,setShow] = useState(false);
-  const [showEdit,setShowEdit] = useState(false);
+  const [show, setShow] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   // disables button toogles
-  const [btnDisabled,setBtnDisabled]  = useState(true);
+  const [btnDisabled, setBtnDisabled] = useState(true);
   // password view toogles state
-  const [typeis,setTypeis] = useState('password');
+  const [typeis, setTypeis] = useState("password");
   // global state from redux
-  const globalState = useSelector(state => state);
+  const globalState = useSelector((state) => state);
   // api webservice
   const WebServiceManager = useMemo(() => new WebServicesManager(), []);
 
-  useEffect(()=>{
+  useEffect(() => {
     setUserData([]);
-    fetch('http://localhost:4000/users/',{
-      mathod:'GET',
-      headers:{
-        'content-type':'application/json',
-        'Authorization':`Bearer ${globalState.auth.authToken}`,
-      }
-    }).then(res => res.json())
-    .then(responseJson => {
-      var userDatais = [];
-      responseJson.users.map(item=> {
-        
-          item.role !== "admin"?
-          userDatais.push([item.firstName,item.lastName,item.email,moment(item.createdDate).format('ddd MM YYYY HH:mm'),item.id]):
-          console.log("admin");
-        
-        }  
-      );
-      // debugger;
-      console.log(typeof userDatais);
-      setUserData(userDatais);
+    fetch("https://restaurant.a-table.app/users/", {
+      mathod: "GET",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${globalState.auth.authToken}`,
+      },
     })
-    .catch(error=>console.log("error",error));
-  },[updateData]);
-
+      .then((res) => res.json())
+      .then((responseJson) => {
+        var userDatais = [];
+        responseJson.users.map((item) => {
+          item.role !== "admin"
+            ? userDatais.push([
+                item.firstName,
+                item.lastName,
+                item.email,
+                moment(item.createdDate).format("ddd MM YYYY HH:mm"),
+                item.id,
+              ])
+            : console.log("admin");
+        });
+        // //debugger;
+        console.log(typeof userDatais);
+        setUserData(userDatais);
+      })
+      .catch((error) => console.log("error", error));
+  }, [updateData]);
 
   // handle button disable function
   const handleBtnDisables = () => {
-    // debugger;
-    const {firstName,lastName,email,password,emailError,passwordError,firstNameError,lastNameError} = state;
+    // //debugger;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      emailError,
+      passwordError,
+      firstNameError,
+      lastNameError,
+    } = state;
     var stateUpdate = state;
-    if(firstName !== "" && lastName !=="" && email !== "" && password !==""){
-      if(firstNameError === "" && lastNameError === "" && emailError === "" && passwordError === ""){
+    if (
+      firstName !== "" &&
+      lastName !== "" &&
+      email !== "" &&
+      password !== ""
+    ) {
+      if (
+        firstNameError === "" &&
+        lastNameError === "" &&
+        emailError === "" &&
+        passwordError === ""
+      ) {
         setBtnDisabled(false);
-      }
-      else{
+      } else {
         setBtnDisabled(true);
       }
-    }else{
+    } else {
       setBtnDisabled(true);
     }
-  }
+  };
 
   //  reset state data
   const handleResetState = () => {
     setState({
-      infoId:"",
+      infoId: "",
       // first Name
-      firstName:"",
-      firstNameError:"",
+      firstName: "",
+      firstNameError: "",
       // last Name
-      lastName:"",
-      lastNameError:"",
+      lastName: "",
+      lastNameError: "",
       // email
-      email:"",
-      emailError:"",
+      email: "",
+      emailError: "",
       // password
-      password:"",
-      passwordError:"",
+      password: "",
+      passwordError: "",
       // confirm password
-      cPassword:"",
-      cPasswordError:"",
-    })
+      cPassword: "",
+      cPasswordError: "",
+    });
     setShowPasswordField(false);
-  }
+  };
 
   // handle Change to fields
-  const handleEmailChange = e =>{
-    if(Utilities.ValidateEmail(e.target.value)){
-      setState({...state,emailError:""})
-      handleBtnDisables()
-    }else{
-      setState({...state,emailError:"Invalid Email"})
-      handleBtnDisables()
+  const handleEmailChange = (e) => {
+    if (Utilities.ValidateEmail(e.target.value)) {
+      setState({ ...state, emailError: "" });
+      handleBtnDisables();
+    } else {
+      setState({ ...state, emailError: "Invalid Email" });
+      handleBtnDisables();
     }
-    setState({...state,email:e.target.value})
-    handleBtnDisables()
-  }
-  
-  const handleChange = e => {
-    var stateUpdate = {...state};
+    setState({ ...state, email: e.target.value });
+    handleBtnDisables();
+  };
+
+  const handleChange = (e) => {
+    var stateUpdate = { ...state };
     stateUpdate[e.target.name] = e.target.value;
     setState(stateUpdate);
-    handleBtnDisables()
-  }
+    handleBtnDisables();
+  };
 
-  const handleToogle = ()=> {
-    typeis === "password"?setTypeis('text'):setTypeis('password');
-  }
+  const handleToogle = () => {
+    typeis === "password" ? setTypeis("text") : setTypeis("password");
+  };
 
   // handleCloseModels
   const handleClose = () => {
     setShow(false);
-  }
+  };
   const handleCloseEdit = () => {
     setShowEdit(false);
     handleResetState();
-  }
-
+  };
 
   // handle add new record
-  const handleAdd = () =>{
-    const {firstName,lastName,email,password} = state;
-    const info = {
+  const handleAdd = () => {
+    const { firstName, lastName, email, password } = state;
+    var info = {
       firstName,
       lastName,
-      email,
-      password
-    }
+      email: email.toLocaleLowerCase(),
+      password,
+    };
     WebServiceManager.postApiCall(
       {
-        endPoint:'users/register',
-        dataToInsert:JSON.stringify(info),
-        token:globalState.auth.authToken,
+        endPoint: "users/register",
+        dataToInsert: JSON.stringify(info),
+        token: globalState.auth.authToken,
       },
-      (statusCode,responseAdd)=>{
-        if(statusCode === 200){
+      (statusCode, responseAdd) => {
+        if (statusCode === 200) {
           handleClose();
           handleResetState();
           setUpdateData(!updateData);
-        }else{
+        } else {
           alert(responseAdd.message);
         }
       }
-    )
-
-  }
+    );
+  };
 
   // handle Edit Click
   const handleEdit = (id) => {
     var stateUpdate = state;
     WebServiceManager.getApiWithParamCall(
       {
-        endPoint:'users',
-        dataToFetch:id,
-        token:globalState.auth.authToken,
+        endPoint: "users",
+        dataToFetch: id,
+        token: globalState.auth.authToken,
       },
-      (statusCode,responseUser)=>{  
+      (statusCode, responseUser) => {
         stateUpdate.firstName = responseUser.firstName;
         stateUpdate.lastName = responseUser.lastName;
-        stateUpdate.email  = responseUser.email;
+        stateUpdate.email = responseUser.email;
         stateUpdate.password = responseUser.password;
         stateUpdate.infoId = id;
         setState(stateUpdate);
         setShowEdit(true);
-        console.log("State before",state);
+        console.log("State before", state);
         // handleBtnDisables();
       }
-    )
-  }
+    );
+  };
 
   // handle Edit submit (update call.)
   const handleUpdate = (id) => {
-    const {firstName,lastName,email,password,infoId} = state;
-    const info = {
-      firstName,
-      lastName,
-      email,
-      password,
-    } 
+    const { firstName, lastName, email, password, infoId, oldPass } = state;
+    var info;
+    if (oldPass !== "") {
+      info = {
+        firstName,
+        lastName,
+        email,
+        password,
+      };
+    } else {
+      info = {
+        firstName,
+        lastName,
+        email,
+      };
+    }
+    //debugger;
     WebServiceManager.putApi(
       {
-        endPoint:'users',
-        userID:infoId,
-        dataToUpdate:JSON.stringify(info),
-        token:globalState.auth.authToken,
+        endPoint: "users/updateuserbyadmin",
+        userID: infoId,
+        dataToUpdate: JSON.stringify(info),
+        token: globalState.auth.authToken,
       },
-      (statusCode,responseUpdate)=>{
-        debugger;
-        console.log("updates");
-        setShowEdit(false);
-        setUpdateData(!updateData);
+      (statusCode, responseUpdate) => {
+        //debugger;
+        if (responseUpdate.message) {
+          window.alert("Error: " + responseUpdate.message.message);
+        } else {
+          console.log("updates");
+          setShowEdit(false);
+          handleResetState();
+          setUpdateData(!updateData);
+        }
       }
-    )
-  }
+    );
+  };
 
   // handle delete function
   const handleDelete = (id) => {
+    const confirmis = window.confirm("Are you sure you want to delete?");
 
-    const confirmis = window.confirm("Are you sure you want to delete?"); 
-
-    if(confirmis === true){
+    if (confirmis === true) {
       WebServiceManager.DeleteApiInURL(
         {
-          endPoint:'users',
-          dataToDelete:id,
-          token:globalState.auth.authToken
+          endPoint: "users",
+          dataToDelete: id,
+          token: globalState.auth.authToken,
         },
-        (statusCode,response)=>{
+        (statusCode, response) => {
           setUpdateData(!updateData);
         }
-      )
+      );
     }
-  }
+  };
 
   // handle Show Password
   const handleShowPassword = () => {
     setShowPasswordField(!showPasswordField);
-    if(showPasswordField !== true){
+    if (showPasswordField !== true) {
       setOldPass(state.password);
       var stateUpdate = state;
       stateUpdate.password = "";
       setState(stateUpdate);
       handleBtnDisables();
-    }else{
+    } else {
       var stateUpdate = state;
       stateUpdate.password = oldPass;
       setState(stateUpdate);
       setOldPass("");
     }
-  }
+  };
 
   const actionsList = {
-    deleteAction:handleDelete,
-    updateAction:handleEdit,
-    addAction:()=>setShow(true),
-  }
+    deleteAction: handleDelete,
+    updateAction: handleEdit,
+    addAction: () => setShow(true),
+  };
 
   return (
     <>
-    {console.log('usersata',userData)}
-      {userData.length >0?
-        <DataTableComponent actionCol={4} columns={columns} data={userData} actions={actionsList} />
-      :
+      {userData.length > 0 ? (
+        <DataTableComponent
+          actionCol={4}
+          columns={columns}
+          data={userData}
+          actions={actionsList}
+        />
+      ) : (
         <>
-        <Row style={{flexDirection:'row-reverse'}}>
-          <Button vairent="primary" onClick={()=>setShow(true)}>Add</Button>
-        </Row>
-        <hr/>
-        <p style={{textAlign:'center'}}>No Record Found</p>
+          <Row style={{ flexDirection: "row-reverse" }}>
+            <Button vairent="primary" onClick={() => setShow(true)}>
+              Add
+            </Button>
+          </Row>
+          <hr />
+          <p style={{ textAlign: "center" }}>No Record Found</p>
         </>
-      }
+      )}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Add User</Modal.Title>
@@ -332,7 +370,7 @@ export default function UserList() {
                 label="Email"
                 value={state.email}
                 name="email"
-                onChange={e=>handleEmailChange(e)}
+                onChange={(e) => handleEmailChange(e)}
                 margin="normal"
                 helperText={state.emailError}
                 variant="outlined"
@@ -350,7 +388,8 @@ export default function UserList() {
                 helperText={state.passwordError}
                 variant="outlined"
                 // this is where visible button will be added
-                InputProps={{ // <-- This is where the toggle button is added.
+                InputProps={{
+                  // <-- This is where the toggle button is added.
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
@@ -358,10 +397,14 @@ export default function UserList() {
                         onClick={handleToogle}
                         onMouseDown={handleToogle}
                       >
-                        {typeis === 'password' ? <VisibilityIcon/> : <VisibilityOffIcon/> }
+                        {typeis === "password" ? (
+                          <VisibilityIcon />
+                        ) : (
+                          <VisibilityOffIcon />
+                        )}
                       </IconButton>
                     </InputAdornment>
-                  )
+                  ),
                 }}
               />
             </Col>
@@ -414,7 +457,7 @@ export default function UserList() {
                 disabled={true}
                 value={state.email}
                 name="email"
-                onChange={e=>handleEmailChange(e)}
+                onChange={(e) => handleEmailChange(e)}
                 margin="normal"
                 helperText={state.emailError}
                 variant="outlined"
@@ -423,12 +466,18 @@ export default function UserList() {
             <Col sm={12}>
               <FormGroup row>
                 <FormControlLabel
-                  control={<Checkbox checked={showPasswordField} onChange={handleShowPassword} name="showPassword" />}
+                  control={
+                    <Checkbox
+                      checked={showPasswordField}
+                      onChange={handleShowPassword}
+                      name="showPassword"
+                    />
+                  }
                   label="Change Password"
                 />
               </FormGroup>
             </Col>
-            {showPasswordField?
+            {showPasswordField ? (
               <Col md={12}>
                 <TextField
                   id="outlined-password-update"
@@ -441,7 +490,8 @@ export default function UserList() {
                   helperText={state.passwordError}
                   variant="outlined"
                   // this is where visible button will be added
-                  InputProps={{ // <-- This is where the toggle button is added.
+                  InputProps={{
+                    // <-- This is where the toggle button is added.
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
@@ -449,22 +499,31 @@ export default function UserList() {
                           onClick={handleToogle}
                           onMouseDown={handleToogle}
                         >
-                          {typeis === 'password' ? <VisibilityIcon/> : <VisibilityOffIcon/> }
+                          {typeis === "password" ? (
+                            <VisibilityIcon />
+                          ) : (
+                            <VisibilityOffIcon />
+                          )}
                         </IconButton>
                       </InputAdornment>
-                    )
+                    ),
                   }}
                 />
-              </Col>:
+              </Col>
+            ) : (
               ""
-            }
+            )}
           </Row>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseEdit}>
             Close
           </Button>
-          <Button variant="primary" disabled={btnDisabled} onClick={handleUpdate}>
+          <Button
+            variant="primary"
+            disabled={btnDisabled}
+            onClick={handleUpdate}
+          >
             Update User
           </Button>
         </Modal.Footer>

@@ -73,29 +73,32 @@ function Login(props) {
       setTimeout(() => {
         login(
           {
-            dataToSend:JSON.stringify({ email: values.email, password: values.password }),
-          },  
-          (responseLogin)=>{
-            debugger;
-            console.log("in callback",responseLogin);
-            if(responseLogin.status === 200){
-              if(responseLogin.user.role === "admin"){
+            dataToSend: JSON.stringify({
+              email: values.email,
+              password: values.password,
+            }),
+          },
+          (responseLogin) => {
+            //debugger;
+            console.log("in callback", responseLogin);
+            if (responseLogin.status === 200) {
+              if (responseLogin.user.role === "admin") {
                 disableLoading();
                 setSubmitting(false);
-                localStorage.setItem('usertest',responseLogin.user);
+                localStorage.setItem("usertest", responseLogin.user);
                 props.login(responseLogin.user);
-              }else{
+              } else {
                 disableLoading();
                 setSubmitting(false);
                 setStatus("Only Admin member allowed to login");
               }
-            }else{
+            } else {
               disableLoading();
               setSubmitting(false);
               setStatus(responseLogin.message);
             }
           }
-        )
+        );
       }, 1000);
     },
   });
@@ -122,7 +125,9 @@ function Login(props) {
           <div className="mb-10 alert alert-custom alert-light-danger alert-dismissible">
             <div className="alert-text font-weight-bold">{formik.status}</div>
           </div>
-        ) :"" }
+        ) : (
+          ""
+        )}
 
         <div className="form-group fv-plugins-icon-container">
           <input

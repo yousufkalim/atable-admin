@@ -2,28 +2,30 @@ import React from "react";
 import Utilities from "../Utilities/Utilities";
 
 export default class WebServicesManager extends React.Component {
-	// baseUrl = "http://160.153.244.127:9090/api/";
-  baseUrl = "http://localhost:4000/";
-
+  baseUrl = "https://restaurant.a-table.app/";
+  // baseUrl = "http://160.153.249.64:8082/";
+  // baseUrl = "https://restaurant.a-table.app/";
 
   //Post method
 
   callPostMethod(apiURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     fetch(apiURL, {
       method: "POST",
-      headers:headeris,
-      body: params.dataToInsert
+      headers: headeris,
+      body: params.dataToInsert,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {
+      .catch((error) => {
         console.log(error.message);
       });
   }
@@ -47,39 +49,43 @@ export default class WebServicesManager extends React.Component {
   }
 
   callPostMethodForm(apiURL, params, callback) {
-    let headeris = {}
-    if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
+    let headeris = {};
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
+    }
     fetch(apiURL, {
       method: "POST",
-      headers:headeris,
-      body: params.dataToInsert
+      headers: headeris,
+      body: params.dataToInsert,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {
-        console.log("error Form POST",error.message);
+      .catch((error) => {
+        console.log("error Form POST", error.message);
       });
   }
 
   //Get method
   callGetMethod(baseURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     fetch(baseURL, {
       method: "Get",
       headers: headeris,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {});
+      .catch((error) => {});
   }
   getApiCall(params, callback) {
     return this.callGetMethod(this.baseUrl + params.endPoint, params, callback);
@@ -88,19 +94,21 @@ export default class WebServicesManager extends React.Component {
   //Get method for contactUs
   callGetMethodForContactUs(baseURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     fetch(baseURL, {
       method: "Get",
       headers: headeris,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {
+      .catch((error) => {
         Utilities.showAlert("Error");
       });
   }
@@ -115,20 +123,22 @@ export default class WebServicesManager extends React.Component {
   //Get method for Email validate Check
   callGetMethodForEmailValidate(baseURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     baseURL = baseURL + "/?email=" + params.dataToCheck;
     fetch(baseURL, {
       method: "Get",
       headers: headeris,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {
+      .catch((error) => {
         Utilities.showAlert("Error");
       });
   }
@@ -143,19 +153,21 @@ export default class WebServicesManager extends React.Component {
   //Post method
   callPostMethodToGetAllPerson(baseURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     fetch(baseURL, {
       method: "Post",
       headers: headeris,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {
+      .catch((error) => {
         Utilities.showAlert("Error");
       });
   }
@@ -169,20 +181,22 @@ export default class WebServicesManager extends React.Component {
 
   callPostNearbyInstructorMethod(apiURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     fetch(apiURL, {
       method: "POST",
       headers: headeris,
-      body: params.dataToInsert
+      body: params.dataToInsert,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {});
+      .catch((error) => {});
   }
   // getApiCallInstructor(params, callback) {
   //   return this.callGetMethod(this.baseUrl + params.endPoint, params, callback);
@@ -199,59 +213,73 @@ export default class WebServicesManager extends React.Component {
   //Get with parameters method with ID
   callGetWithParamMethod(baseURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     baseURL = baseURL + "/" + params.dataToFetch;
     fetch(baseURL, {
       method: "Get",
-      headers:headeris
+      headers: headeris,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {});
+      .catch((error) => {});
   }
   callApiwithParamReturnMsg(baseURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     baseURL = baseURL + "/?id=" + params.dataToFetch;
-    fetch(baseURL, {
-      method: "Get",
-      headers:headeris
-      // body: params.dataToFetch
-    })
-      .then(response => response.json())
-      .then(responseJson => {
-        console.log("Json Form of response", responseJson);
-        let statusCode = responseJson.status;
-        callback(statusCode, responseJson);
-      })
-      .catch(error => {console.log(error)});
-  }
-
-  GetBookletCmt(baseURL, params, callback) {
-    let headeris = {
-      "Content-Type": "application/json"
-    }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
-    baseURL = this.baseUrl +baseURL+ "/?studentId=" + params[0]+"&bookletItemId="+params[1];
-    
     fetch(baseURL, {
       method: "Get",
       headers: headeris,
       // body: params.dataToFetch
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log("Json Form of response", responseJson);
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {});
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  GetBookletCmt(baseURL, params, callback) {
+    let headeris = {
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
+    }
+    baseURL =
+      this.baseUrl +
+      baseURL +
+      "/?studentId=" +
+      params[0] +
+      "&bookletItemId=" +
+      params[1];
+
+    fetch(baseURL, {
+      method: "Get",
+      headers: headeris,
+      // body: params.dataToFetch
+    })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        let statusCode = responseJson.status;
+        callback(statusCode, responseJson);
+      })
+      .catch((error) => {});
   }
   getApiWithParamCall(params, callback) {
     return this.callGetWithParamMethod(
@@ -260,30 +288,32 @@ export default class WebServicesManager extends React.Component {
       callback
     );
   }
-getApiwithParamReturnMsg(params, callback) {
-  return this.callApiwithParamReturnMsg(
-    this.baseUrl + params.endPoint,
-    params,
-    callback
-  );
-}
+  getApiwithParamReturnMsg(params, callback) {
+    return this.callApiwithParamReturnMsg(
+      this.baseUrl + params.endPoint,
+      params,
+      callback
+    );
+  }
   //Get LogIn
   callGetLogIn(baseURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     fetch(baseURL, {
       method: "POST",
       headers: headeris,
-      body: params.dataToLogIn
+      body: params.dataToLogIn,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {});
+      .catch((error) => {});
   }
 
   LogIn(params, callback) {
@@ -295,59 +325,68 @@ getApiwithParamReturnMsg(params, callback) {
   //Get with parameters method with ID
   callPutMethod(baseURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
-    baseURL = baseURL + "/" + params.userID
+    baseURL = baseURL + "/" + params.userID;
 
     fetch(baseURL, {
       method: "PUT",
       headers: headeris,
       body: params.dataToUpdate,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => console.log("error is"+error));
+      .catch((error) => callback("400", { message: error }));
   }
 
   putApi(params, callback) {
     return this.callPutMethod(this.baseUrl + params.endPoint, params, callback);
   }
 
-
   // form
   putApiForm(params, callback) {
-    return this.callPutMethodForm(this.baseUrl + params.endPoint, params, callback);
+    return this.callPutMethodForm(
+      this.baseUrl + params.endPoint,
+      params,
+      callback
+    );
   }
 
   callPutMethodForm(baseURL, params, callback) {
-    let headeris = {}
-    console.log('paramsData',params.dataToUpdate);
-    if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
-    baseURL = baseURL + "/" + params.userID
+    let headeris = {};
+    console.log("paramsData", params.dataToUpdate);
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
+    }
+    baseURL = baseURL + "/" + params.userID;
 
     fetch(baseURL, {
       method: "PUT",
       headers: headeris,
       body: params.dataToUpdate,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => console.log("error is"+error));
+      .catch((error) => console.log("error is" + error));
   }
 
   //delete with parameters method with ID
   callDeleteMethod(baseURL, params, callback) {
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     var params1 = JSON.parse(params.dataToUpdate);
     baseURL = baseURL + "?id=" + params1.id;
 
@@ -357,12 +396,12 @@ getApiwithParamReturnMsg(params, callback) {
       headers: headeris,
       // body: params.dataToFetch
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {
+      .catch((error) => {
         Utilities.showAlert("Error");
       });
   }
@@ -380,21 +419,23 @@ getApiwithParamReturnMsg(params, callback) {
     // var params = JSON.parse(params.dataToDelete);
     baseURL = baseURL + "/" + params.dataToDelete;
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-    if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
     // baseURL = baseURL;
     fetch(baseURL, {
       method: "Delete",
-      headers: headeris
+      headers: headeris,
       // body: params.dataToFetch
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson.returnStatus);
       })
-      .catch(error => {
+      .catch((error) => {
         Utilities.showAlert("Error");
       });
   }
@@ -411,22 +452,24 @@ getApiwithParamReturnMsg(params, callback) {
   callPostMethodForSuspend(baseURL, params, callback) {
     // var params = JSON.parse(params.dataToUpdate);
     let headeris = {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+    };
+    if (params.token !== undefined) {
+      headeris["Authorization"] = "Bearer " + params.token;
     }
-  if(params.token !== undefined){headeris["Authorization"]="Bearer "+params.token}
 
     // baseURL = baseURL;
     fetch(baseURL, {
       method: "Post",
       headers: headeris,
-      body: params.dataToUpdate
+      body: params.dataToUpdate,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson);
       })
-      .catch(error => {
+      .catch((error) => {
         Utilities.showAlert("Error");
       });
   }
@@ -443,14 +486,14 @@ getApiwithParamReturnMsg(params, callback) {
   callImagePostMethod(apiURL, params, callback) {
     fetch(apiURL, {
       method: "POST",
-      body: params.dataToInsert
+      body: params.dataToInsert,
     })
-      .then(response => response.json())
-      .then(responseJson => {
+      .then((response) => response.json())
+      .then((responseJson) => {
         let statusCode = responseJson.status;
         callback(statusCode, responseJson.message);
       })
-      .catch(error => {});
+      .catch((error) => {});
   }
 
   postApiImageCall(params, callback) {

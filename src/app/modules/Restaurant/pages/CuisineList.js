@@ -1,9 +1,9 @@
-import React,{useState,useEffect, useMemo} from 'react';
-import {useSelector} from "react-redux";
+import React, { useState, useEffect, useMemo } from "react";
+import { useSelector } from "react-redux";
 // react bootstarp components
-import { Button, Row, Col,Modal } from "react-bootstrap";
+import { Button, Row, Col, Modal } from "react-bootstrap";
 // material ui components
-import {TextField} from "@material-ui/core";
+import { TextField } from "@material-ui/core";
 
 // required imports....
 import DataTableComponent from "../../Table/pages/DataTableComponent.jsx";
@@ -12,111 +12,107 @@ import moment from "moment";
 
 export default function CuisineList() {
   const [state, setState] = useState({
-    infoId:"",
+    infoId: "",
   });
 
-  const [name,setName] = useState('');
+  const [name, setName] = useState("");
 
   const columns = [
-    { title: 'Name' },
-    {title: 'Date Of Created'},
-    {title:'Actions'},
-  
+    { title: "Name" },
+    { title: "Date Of Created" },
+    { title: "Actions" },
   ];
-  const [userData,setUserData] = useState([]);
-  const [updateData,setUpdateData] = useState(false);
+  const [userData, setUserData] = useState([]);
+  const [updateData, setUpdateData] = useState(false);
   // model toogler
-  const [show,setShow] = useState(false);
-  const [showEdit,setShowEdit] = useState(false);
+  const [show, setShow] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   // disables button toogles
-  const [btnDisabled,setBtnDisabled]  = useState(true);
+  const [btnDisabled, setBtnDisabled] = useState(true);
   // global state from redux
-  const globalState = useSelector(state => state);
+  const globalState = useSelector((state) => state);
   // api webservice
   const WebServiceManager = useMemo(() => new WebServicesManager(), []);
 
-  useEffect(()=>{
+  useEffect(() => {
     setUserData([]);
-    fetch('http://localhost:4000/cuisine/',{
-      mathod:'GET',
-      headers:{
-        'content-type':'application/json',
-        'Authorization':`Bearer ${globalState.auth.authToken}`,
-      }
-    }).then(res => res.json())
-    .then(responseJson => {
-      var userDatais = [];
-      responseJson.cuisineList.map(item=> {
-            userDatais.push(
-                [
-                  item.name,
-                  moment(item.createdDate).format('ddd MM YYYY HH:mm'),
-                  item.id
-                ]
-            )
-        }  
-      );
-      setUserData(userDatais);
+    fetch("https://restaurant.a-table.app/cuisineType/", {
+      mathod: "GET",
+      headers: {
+        "content-type": "application/json",
+        Authorization: `Bearer ${globalState.auth.authToken}`,
+      },
     })
-    .catch(error=>console.log("error",error));
-  },[updateData]);
-
+      .then((res) => res.json())
+      .then((responseJson) => {
+        var userDatais = [];
+        responseJson.cuisineList.map((item) => {
+          userDatais.push([
+            item.name,
+            moment(item.createdDate).format("ddd MM YYYY HH:mm"),
+            item.id,
+          ]);
+        });
+        setUserData(userDatais);
+      })
+      .catch((error) => console.log("error", error));
+  }, [updateData]);
 
   // handle button disable function
   const handleBtnDisables = () => {
-    if(name !== "" ){
-     setBtnDisabled(false);
-    }else{
+    if (name !== "") {
+      setBtnDisabled(false);
+    } else {
       setBtnDisabled(true);
     }
-  }
+  };
 
   //  reset state data
   const handleResetState = () => {
     setState({
-      infoId:"",
-    })
+      infoId: "",
+    });
     setName("");
-  }
+  };
 
-  const handleChange = async e => {
+  const handleChange = async (e) => {
     setName(e.target.value);
     handleBtnDisables();
-  }
+  };
 
   // handleCloseModels
   const handleClose = () => {
     setShow(false);
-  }
+  };
   const handleCloseEdit = () => {
     setShowEdit(false);
     handleResetState();
-  }
-
+  };
 
   // handle add new record
-  const handleAdd = () =>{
+  const handleAdd = () => {
     const info = {
-      name
-    }
+      name,
+    };
+    setBtnDisabled(true);
     WebServiceManager.postApiCall(
       {
-        endPoint:'cuisine/addcuisinetype',
-        dataToInsert:JSON.stringify(info),
-        token:globalState.auth.authToken,
+        endPoint: "cuisineType/addcuisinetype",
+        dataToInsert: JSON.stringify(info),
+        token: globalState.auth.authToken,
       },
-      (statusCode,responseAdd)=>{
-        if(statusCode === "200"){
+      (statusCode, responseAdd) => {
+        if (statusCode === "200") {
           handleClose();
           handleResetState();
           setUpdateData(!updateData);
-        }else{
+        } else {
           alert(responseAdd.message);
+          setBtnDisabled(false);
         }
       }
-    )
-
-  }
+    );
+  };
 
   // handle Edit Click
   const handleEdit = (id) => {
@@ -124,11 +120,11 @@ export default function CuisineList() {
     // render Data
     WebServiceManager.getApiWithParamCall(
       {
-        endPoint:'cuisine',
-        dataToFetch:id,
-        token:globalState.auth.authToken,
+        endPoint: "cuisineType",
+        dataToFetch: id,
+        token: globalState.auth.authToken,
       },
-      (statusCode,responseUser)=>{
+      (statusCode, responseUser) => {
         stateUpdate.infoId = id;
         setState(stateUpdate);
         setName(responseUser.name);
@@ -136,68 +132,76 @@ export default function CuisineList() {
         // show update;
         setShowEdit(true);
       }
-    )
-  }
+    );
+  };
 
   // handle Edit submit (update call.)
   const handleUpdate = (id) => {
-    const {infoId} = state;
+    const { infoId } = state;
     const info = {
-      name
-    } 
+      name,
+    };
+    setBtnDisabled(true);
     WebServiceManager.putApi(
       {
-        endPoint:'cuisine',
-        userID:infoId,
-        dataToUpdate:JSON.stringify(info),
-        token:globalState.auth.authToken,
+        endPoint: "cuisineType",
+        userID: infoId,
+        dataToUpdate: JSON.stringify(info),
+        token: globalState.auth.authToken,
       },
-      (statusCode,responseUpdate)=>{
+      (statusCode, responseUpdate) => {
         setShowEdit(false);
+        handleResetState();
         setUpdateData(!updateData);
       }
-    )
-  }
+    );
+  };
 
   // handle delete function
   const handleDelete = (id) => {
+    const confirmis = window.confirm("Are you sure you want to delete?");
 
-    const confirmis = window.confirm("Are you sure you want to delete?"); 
-
-    if(confirmis === true){
+    if (confirmis === true) {
       WebServiceManager.DeleteApiInURL(
         {
-          endPoint:'dishType',
-          dataToDelete:id,
-          token:globalState.auth.authToken
+          endPoint: "dishType",
+          dataToDelete: id,
+          token: globalState.auth.authToken,
         },
-        (statusCode,response)=>{
+        (statusCode, response) => {
           setUpdateData(!updateData);
         }
-      )
+      );
     }
-  }
+  };
 
   const actionsList = {
-    deleteAction:handleDelete,
-    updateAction:handleEdit,
-    addAction:()=>setShow(true),
-  }
+    deleteAction: handleDelete,
+    updateAction: handleEdit,
+    addAction: () => setShow(true),
+  };
 
   return (
     <>
-    {console.log('usersata',userData)}
-      {userData.length >0?
-        <DataTableComponent actionCol={2} columns={columns} data={userData} actions={actionsList} />
-      :
+      {console.log("usersata", userData)}
+      {userData.length > 0 ? (
+        <DataTableComponent
+          actionCol={2}
+          columns={columns}
+          data={userData}
+          actions={actionsList}
+        />
+      ) : (
         <>
-        <Row style={{flexDirection:'row-reverse'}}>
-          <Button vairent="primary" onClick={()=>setShow(true)}>Add</Button>
-        </Row>
-        <hr/>
-        <p style={{textAlign:'center'}}>No Record Found</p>
+          <Row style={{ flexDirection: "row-reverse" }}>
+            <Button vairent="primary" onClick={() => setShow(true)}>
+              Add
+            </Button>
+          </Row>
+          <hr />
+          <p style={{ textAlign: "center" }}>No Record Found</p>
         </>
-      }
+      )}
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
           <Modal.Title>Add Cuisine Type</Modal.Title>
@@ -250,7 +254,11 @@ export default function CuisineList() {
           <Button variant="secondary" onClick={handleCloseEdit}>
             Close
           </Button>
-          <Button variant="primary" disabled={btnDisabled} onClick={handleUpdate}>
+          <Button
+            variant="primary"
+            disabled={btnDisabled}
+            onClick={handleUpdate}
+          >
             Update Cuisine
           </Button>
         </Modal.Footer>
