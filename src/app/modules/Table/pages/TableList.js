@@ -86,9 +86,9 @@ export default function DishesList() {
     setTableData([]);
     var SendUrl = "";
     if (rest_id !== "error" && rest_id !== undefined) {
-      SendUrl = "https://restaurant.a-table.app/tables/restaurant/" + rest_id;
+      SendUrl = "http://localhost:4000/tables/restaurant/" + rest_id;
     } else {
-      SendUrl = "https://restaurant.a-table.app/tables/";
+      SendUrl = "http://localhost:4000/tables/";
     }
     fetch(SendUrl, {
       mathod: "GET",

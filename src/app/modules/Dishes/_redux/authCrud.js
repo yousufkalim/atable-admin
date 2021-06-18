@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseUrl = "https://restaurant.a-table.app/";
+const baseUrl = "http://localhost:4000/";
 
 export const LOGIN_URL = `${baseUrl}users/authenticate`;
 export const REGISTER_URL = "api/auth/register";

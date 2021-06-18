@@ -52,9 +52,9 @@ export default function OrderList() {
     setOrderData([]);
     var SendUrl = "";
     if (rest_id !== "error" && rest_id !== undefined) {
-      SendUrl = "https://restaurant.a-table.app/tables/restaurant/" + rest_id;
+      SendUrl = "http://localhost:4000/tables/restaurant/" + rest_id;
     } else {
-      SendUrl = "https://restaurant.a-table.app/orders/";
+      SendUrl = "http://localhost:4000/orders/";
     }
     fetch(SendUrl, {
       mathod: "GET",

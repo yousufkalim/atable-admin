@@ -98,7 +98,7 @@ export default function RestaurantList() {
 
   useEffect(() => {
     setRestaurantData([]);
-    fetch("https://restaurant.a-table.app/resturants/", {
+    fetch("http://localhost:4000/resturants/", {
       mathod: "GET",
       headers: {
         "content-type": "application/json",

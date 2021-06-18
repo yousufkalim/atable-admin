@@ -36,7 +36,7 @@ export default function CuisineList() {
 
   useEffect(() => {
     setUserData([]);
-    fetch("https://restaurant.a-table.app/cuisineType/", {
+    fetch("http://localhost:4000/cuisineType/", {
       mathod: "GET",
       headers: {
         "content-type": "application/json",

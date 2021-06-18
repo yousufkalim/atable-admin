@@ -19,7 +19,7 @@ import WebServicesManager from "../../../../WebServiceManager/WebServicesManager
 import moment from "moment";
 import { specificationsSlice } from "app/modules/ECommerce/_redux/specifications/specificationsSlice.js";
 
-const baseUrl = "https://restaurant.a-table.app/";
+const baseUrl = "http://localhost:4000/";
 
 export default function DishesList() {
   //  reffeance for input field
@@ -182,9 +182,9 @@ export default function DishesList() {
     setRestaurantData([]);
     var SendUrl = "";
     if (menu_id !== "error" && menu_id !== undefined) {
-      SendUrl = "https://restaurant.a-table.app/dishs/restaurant/" + menu_id;
+      SendUrl = "http://localhost:4000/dishs/restaurant/" + menu_id;
     } else {
-      SendUrl = "https://restaurant.a-table.app/dishs/";
+      SendUrl = "http://localhost:4000/dishs/";
     }
     fetch(SendUrl, {
       mathod: "GET",
