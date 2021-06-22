@@ -176,6 +176,7 @@ export default function UserList() {
 
   // handleCloseModels
   const handleClose = () => {
+    handleResetState();
     setShow(false);
   };
   const handleCloseEdit = () => {

@@ -23,6 +23,7 @@ import Utilities from "../../../../Utilities/Utilities";
 export default function RestaurantList() {
   //  reffeance for input field
   const hiddenFileInput = useRef(null);
+  const [error, setError] = React.useState({});
   const [state, setState] = React.useState({
     infoId: "",
     resturant_name: "",
@@ -96,6 +97,8 @@ export default function RestaurantList() {
     );
   }, []);
 
+  const baseUrl = "http://localhost:4000/";
+
   useEffect(() => {
     setRestaurantData([]);
     fetch("http://localhost:4000/resturants/", {
@@ -112,7 +115,7 @@ export default function RestaurantList() {
           console.log("item", item);
           userDatais.push([
             item.resturant_image !== undefined && item.resturant_image !== ""
-              ? `<img style="width:100px;height:100px" src="${item.resturant_image}" alt="resturant Image" />`
+              ? `<img style="width:100px;height:100px" src="${baseUrl}${item.resturant_image}" alt="resturant Image" />`
               : `<img style="width:100px;height:100px" src="https://image.freepik.com/free-vector/no-data-concept-illustration_114360-626.jpg" alt="resturant Image" />`,
             item.resturant_name,
             item.resturant_desc,
@@ -311,6 +314,9 @@ export default function RestaurantList() {
     form.append("password", password);
     form.append("review_url", ratingUrl);
     //debugger;
+
+    console.log("This is the Form Data for adding new record", form);
+
     if (imageFile !== null) {
       form.append("resturant_image", imageFile, imageFile.name);
     }
@@ -330,6 +336,7 @@ export default function RestaurantList() {
         }
       }
     );
+    console.log("checkA", state);
   };
 
   // handle Edit Click
@@ -342,12 +349,10 @@ export default function RestaurantList() {
         token: globalState.auth.authToken,
       },
       (statusCode, responseUser) => {
+        console.log("This is the Handle Edit function", responseUser);
         stateUpdate.resturant_name = responseUser.resturant_name;
         stateUpdate.email = responseUser.email;
-        state.cuisine = {
-          id: responseUser.cuisine_type.id,
-          name: responseUser.cuisine_type.name,
-        };
+        stateUpdate.cuisine = responseUser.cuisine_type;
         stateUpdate.resturant_desc = responseUser.resturant_desc;
         stateUpdate.address = responseUser.resturant_address;
         stateUpdate.zipCode = responseUser.resturant_zipCode;
@@ -400,11 +405,13 @@ export default function RestaurantList() {
       formdata.append("resturant_image", imageFile, imageFile.name);
     }
     //debugger;
-
-    WebServiceManager.postApiCallForm(
+    // console.log("This is the Form Data", formdata);
+    // setError(formdata);
+    WebServiceManager.putApiForm(
       {
-        endPoint: "resturants/updatebyadmin/" + infoId,
-        dataToInsert: formdata,
+        endPoint: "resturants/updatebyadmin",
+        dataToUpdate: formdata,
+        userID: infoId,
         token: globalState.auth.authToken,
       },
       (statusCode, responseUpdate) => {

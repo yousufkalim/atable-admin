@@ -30,7 +30,7 @@ export default function OrderList() {
   const columns = [
     { title: "User" },
     { title: "Restaurant" },
-    { title: "Cart" },
+    // { title: "Cart" },
     { title: "Total Items" },
     { title: "Totol Price" },
     { title: "Status" },
@@ -65,13 +65,17 @@ export default function OrderList() {
     })
       .then((res) => res.json())
       .then((responseJson) => {
+        console.log("responseJson", responseJson);
         //  //debugger;
         var userDatais = [];
-        responseJson.data.map((item) => {
+        responseJson.users.map((item) => {
           userDatais.push([
-            item.user_id.firstName + " " + item.user_id.lastName,
-            item.resturant_id.resturant_name,
-            item.cart_id === null ? "" : item.cart_id,
+            item.user_id !== null
+              ? item.user_id.firstName + " " + item.user_id.lastName
+              : "No Name",
+            item.resturant_id !== null
+              ? item.resturant_id.resturant_name
+              : "No Restaurant",
             item.total_items,
             item.total_price,
             item.order_status,

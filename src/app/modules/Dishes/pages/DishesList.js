@@ -197,7 +197,7 @@ export default function DishesList() {
       .then((responseJson) => {
         console.log("res", responseJson);
         var userDatais = [];
-        responseJson.dishes.map((item) => {
+        responseJson.users.map((item) => {
           userDatais.push([
             item.dish_images.length > 0
               ? `<img style="width:100px;height:100px" src="${baseUrl}${item.dish_images[0]}" alt="resturant Image" />`

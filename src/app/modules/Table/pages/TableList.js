@@ -34,7 +34,7 @@ export default function DishesList() {
   const columns = [
     { title: "Restaurant Name" },
     { title: "Table Number" },
-    { title: "Table Number" },
+    { title: "Table URL" },
     { title: "Date Of Created" },
     { title: "Actions" },
   ];
