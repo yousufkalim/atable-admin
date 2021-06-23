@@ -362,8 +362,9 @@ export default function RestaurantList() {
         stateUpdate.password =
           responseUser.password !== undefined ? responseUser.password : "";
         stateUpdate.ratingUrl = responseUser.review_url;
+
         setState(stateUpdate);
-        setShowImage(responseUser.resturant_image);
+        setShowImage(`${baseUrl}${responseUser.resturant_image}`);
         setShowEdit(true);
         handleBtnDisables();
         console.log("State before", state);
@@ -870,6 +871,9 @@ export default function RestaurantList() {
                     {...params}
                     label="Cuisine Type"
                     variant="outlined"
+                    // inputProps={{
+                    //   value: state.cuisine,
+                    // }}
                   />
                 )}
               />
@@ -891,11 +895,12 @@ export default function RestaurantList() {
                     {...params}
                     label="Address"
                     variant="outlined"
-                    value={state.address}
+                    // value={state.address}
                     onChange={GetAllAdress}
                     helperText={state.addressError}
                     inputProps={{
                       ...params.inputProps,
+                      value: state.address,
                       autoComplete: "new-password", // disable autocomplete and autofill
                     }}
                   />
