@@ -34,6 +34,7 @@ export default function RestaurantList() {
     zipCode: "",
     lat: "",
     long: "",
+    city: "",
     email: "",
     emailError: "",
     addressError: "",
@@ -131,14 +132,14 @@ export default function RestaurantList() {
       .catch((error) => console.log("error", error));
   }, [updateData]);
 
-  const GetAllAdress = (e) => {
+  const GetAllAdress = async (e) => {
     var stateUpdate = state;
-    if (stateUpdate.lat === "" || stateUpdate.long === "") {
-      stateUpdate.address = e.target.value;
-      stateUpdate.addressError =
-        "Please Select From Option to avail location functionilty in app.";
-      setState(stateUpdate);
-    }
+    // if (stateUpdate.lat === "" || stateUpdate.long === "") {
+    stateUpdate.address = e.target.value;
+    // stateUpdate.addressError =
+    //   "Please Select From Option to avail location functionilty in app.";
+    setState(stateUpdate);
+    // }
     // calling api to get request result for address.
     fetch(
       "https://api-adresse.data.gouv.fr/search/?q=" +
@@ -178,11 +179,13 @@ export default function RestaurantList() {
         var zipCode = values[i].PostalCode;
         var lat = values[i].lat;
         var lng = values[i].lng;
+        const city = values[i].city;
         // var newAddress = values[i].label.split(String(zipCode));
         stateUpdate.address = values[i].label;
         stateUpdate.zipCode = zipCode;
         stateUpdate.lat = lat;
         stateUpdate.long = lng;
+        stateUpdate.city = city;
         stateUpdate.addressError = "";
         console.log("updated Data", stateUpdate);
         await setState(stateUpdate);
@@ -244,6 +247,7 @@ export default function RestaurantList() {
       zipCode: "",
       lat: "",
       long: "",
+      city: "",
       // password
       password: "",
       passwordError: "",
@@ -300,6 +304,7 @@ export default function RestaurantList() {
       address,
       zipCode,
       password,
+      city,
       ratingUrl,
     } = state;
     const form = new FormData();
@@ -309,6 +314,7 @@ export default function RestaurantList() {
     form.append("cuisine_type", state.cuisine);
     form.append("resturant_lat", lat);
     form.append("resturant_lng", long);
+    form.append("resturant_city", city);
     form.append("resturant_address", address);
     form.append("resturant_zipCode", zipCode);
     form.append("password", password);
@@ -358,6 +364,9 @@ export default function RestaurantList() {
         stateUpdate.zipCode = responseUser.resturant_zipCode;
         stateUpdate.lat = responseUser.resturant_lat;
         stateUpdate.long = responseUser.resturant_lng;
+        stateUpdate.city = responseUser.resturant_city
+          ? responseUser.resturant_city
+          : "";
         stateUpdate.infoId = id;
         stateUpdate.password =
           responseUser.password !== undefined ? responseUser.password : "";
@@ -385,6 +394,7 @@ export default function RestaurantList() {
       address,
       zipCode,
       password,
+      city,
     } = state;
     // //debugger;
     const formdata = new FormData();
@@ -399,6 +409,7 @@ export default function RestaurantList() {
     formdata.append("resturant_lng", long);
     formdata.append("resturant_address", address);
     formdata.append("resturant_zipCode", zipCode);
+    formdata.append("resturant_city", city);
     if (oldPass !== "") {
       formdata.append("password", password);
     }
