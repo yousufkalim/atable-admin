@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // const baseUrl = "http://a-table123.herokuapp.com/";
-const baseUrl = "http://localhost:4000/";
+const baseUrl = "https://restaurant.a-table.app/";
 // const baseUrl = "https://localhost:4000/";
 
 export const LOGIN_URL = `${baseUrl}users/authenticate`;

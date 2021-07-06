@@ -343,7 +343,7 @@ export default function DishesList() {
 
   const actionsList = {
     deleteAction: handleDelete,
-    updateAction: handleEdit,
+    // updateAction: handleEdit,
     qrGenerate: qrCodeGenerate,
     addAction: () => setShow(true),
   };

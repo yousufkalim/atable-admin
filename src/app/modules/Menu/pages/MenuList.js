@@ -54,7 +54,7 @@ export default function MenuList() {
 
   useEffect(() => {
     setRestaurantData([]);
-    fetch("http://localhost:4000/menus/", {
+    fetch("https://restaurant.a-table.app/menus/", {
       mathod: "GET",
       headers: {
         "content-type": "application/json",
@@ -68,7 +68,7 @@ export default function MenuList() {
           console.log("item", item);
           userDatais.push([
             item.menu_image !== undefined && item.menu_image !== ""
-              ? `<img style="width:100px;height:100px" src="http://localhost:4000/${item.menu_image}" alt="resturant Image" />`
+              ? `<img style="width:100px;height:100px" src="https://restaurant.a-table.app/${item.menu_image}" alt="resturant Image" />`
               : `<img style="width:100px;height:100px" src="https://image.freepik.com/free-vector/no-data-concept-illustration_114360-626.jpg" alt="resturant Image" />`,
             item.menu_name,
             item.menu_desc,
@@ -228,7 +228,9 @@ export default function MenuList() {
         stateUpdate.infoId = id;
         setState(stateUpdate);
         if (responseUser.menu_image) {
-          setShowImage("http://localhost:4000/" + responseUser.menu_image);
+          setShowImage(
+            "https://restaurant.a-table.app/" + responseUser.menu_image
+          );
         }
         setShowEdit(true);
         handleBtnDisables();

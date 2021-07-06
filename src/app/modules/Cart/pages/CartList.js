@@ -44,7 +44,7 @@ export default function CartList() {
 
   useEffect(() => {
     setOrderData([]);
-    fetch("http://localhost:4000/cart/", {
+    fetch("https://restaurant.a-table.app/cart/", {
       mathod: "GET",
       headers: {
         "content-type": "application/json",

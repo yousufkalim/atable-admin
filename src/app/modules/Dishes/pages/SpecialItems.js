@@ -36,7 +36,7 @@ export default function SpecialItems() {
 
   useEffect(() => {
     setUserData([]);
-    fetch("http://localhost:4000/specialItems/", {
+    fetch("https://restaurant.a-table.app/specialItems/", {
       mathod: "GET",
       headers: {
         "content-type": "application/json",

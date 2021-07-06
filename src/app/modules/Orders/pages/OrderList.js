@@ -52,9 +52,9 @@ export default function OrderList() {
     setOrderData([]);
     var SendUrl = "";
     if (rest_id !== "error" && rest_id !== undefined) {
-      SendUrl = "http://localhost:4000/tables/restaurant/" + rest_id;
+      SendUrl = "https://restaurant.a-table.app/tables/restaurant/" + rest_id;
     } else {
-      SendUrl = "http://localhost:4000/orders/";
+      SendUrl = "https://restaurant.a-table.app/orders/";
     }
     fetch(SendUrl, {
       mathod: "GET",
@@ -70,10 +70,10 @@ export default function OrderList() {
         var userDatais = [];
         responseJson.users.map((item) => {
           userDatais.push([
-            item.user_id !== null
+            item.user_id !== null && item.user_id !== undefined
               ? item.user_id.firstName + " " + item.user_id.lastName
               : "No Name",
-            item.resturant_id !== null
+            item.resturant_id !== null && item.resturant_id !== undefined
               ? item.resturant_id.resturant_name
               : "No Restaurant",
             item.total_items,

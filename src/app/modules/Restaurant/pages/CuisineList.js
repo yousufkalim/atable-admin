@@ -36,7 +36,7 @@ export default function CuisineList() {
 
   useEffect(() => {
     setUserData([]);
-    fetch("http://localhost:4000/cuisineType/", {
+    fetch("https://restaurant.a-table.app/cuisineType/", {
       mathod: "GET",
       headers: {
         "content-type": "application/json",
@@ -164,7 +164,7 @@ export default function CuisineList() {
     if (confirmis === true) {
       WebServiceManager.DeleteApiInURL(
         {
-          endPoint: "dishType",
+          endPoint: "cuisineType",
           dataToDelete: id,
           token: globalState.auth.authToken,
         },

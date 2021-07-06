@@ -2,9 +2,9 @@ import React from "react";
 import Utilities from "../Utilities/Utilities";
 
 export default class WebServicesManager extends React.Component {
-  baseUrl = "http://localhost:4000/";
+  baseUrl = "https://restaurant.a-table.app/";
   // baseUrl = "http://160.153.249.64:8082/";
-  // baseUrl = "http://localhost:4000/";
+  // baseUrl = "https://restaurant.a-table.app/";
 
   //Post method
 

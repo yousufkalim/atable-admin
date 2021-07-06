@@ -19,7 +19,7 @@ import WebServicesManager from "../../../../WebServiceManager/WebServicesManager
 import moment from "moment";
 import { specificationsSlice } from "app/modules/ECommerce/_redux/specifications/specificationsSlice.js";
 
-const baseUrl = "http://localhost:4000/";
+const baseUrl = "https://restaurant.a-table.app/";
 
 export default function DishesList() {
   //  reffeance for input field
@@ -182,9 +182,9 @@ export default function DishesList() {
     setRestaurantData([]);
     var SendUrl = "";
     if (menu_id !== "error" && menu_id !== undefined) {
-      SendUrl = "http://localhost:4000/dishs/restaurant/" + menu_id;
+      SendUrl = "https://restaurant.a-table.app/dishs/restaurant/" + menu_id;
     } else {
-      SendUrl = "http://localhost:4000/dishs/";
+      SendUrl = "https://restaurant.a-table.app/dishs/";
     }
     fetch(SendUrl, {
       mathod: "GET",
@@ -197,14 +197,14 @@ export default function DishesList() {
       .then((responseJson) => {
         console.log("res", responseJson);
         var userDatais = [];
-        responseJson.users.map((item) => {
+        responseJson.dishes.map((item) => {
           userDatais.push([
             item.dish_images.length > 0
               ? `<img style="width:100px;height:100px" src="${baseUrl}${item.dish_images[0]}" alt="resturant Image" />`
               : `<img style="width:100px;height:100px" src="https://image.freepik.com/free-vector/no-data-concept-illustration_114360-626.jpg" alt="resturant Image" />`,
             item.dish_name,
             item.dish_description,
-            item.resturant_id !== null
+            item.resturant_id !== null && item.resturant_id !== undefined
               ? item.resturant_id.resturant_name
               : "No Restaurant",
             item.price,
@@ -220,12 +220,20 @@ export default function DishesList() {
   }, [updateData]);
 
   // handle button disable function
-  const handleBtnDisables = () => {
-    const { dish_name, dish_description, price, resturant_id } = state;
+  const handleBtnDisables = (price) => {
+    const {
+      dish_name,
+      dish_description,
+      price: dishPrice,
+      resturant_id,
+    } = state;
+    console.log("dishPrice", dishPrice);
+    console.log("price", price);
+    let originalPrice = price;
     if (
       dish_name !== "" &&
       dish_description !== "" &&
-      price !== "" &&
+      originalPrice !== "" &&
       resturant_id !== ""
     ) {
       if (imageFile !== null || state.infoId !== "") {
@@ -258,7 +266,7 @@ export default function DishesList() {
       tags: [],
       resturant_id: rest_id,
     });
-    setImageFile("https://posterprintfactory.com/assets/file_placeholder.png");
+    setImageFile(null);
     setYourChips([]);
   };
 
@@ -266,7 +274,11 @@ export default function DishesList() {
     var stateUpdate = { ...state };
     stateUpdate[e.target.name] = e.target.value;
     setState(stateUpdate);
-    handleBtnDisables();
+    if (e.target.name === "price") {
+      handleBtnDisables(e.target.value);
+    } else {
+      handleBtnDisables();
+    }
   };
 
   // handleCloseModels

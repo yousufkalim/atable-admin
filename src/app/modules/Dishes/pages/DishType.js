@@ -36,7 +36,7 @@ export default function DishType() {
 
   useEffect(() => {
     setUserData([]);
-    fetch("http://localhost:4000/dishType/", {
+    fetch("https://restaurant.a-table.app/dishType/", {
       mathod: "GET",
       headers: {
         "content-type": "application/json",

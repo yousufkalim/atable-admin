@@ -98,11 +98,11 @@ export default function RestaurantList() {
     );
   }, []);
 
-  const baseUrl = "http://localhost:4000/";
+  const baseUrl = "https://restaurant.a-table.app/";
 
   useEffect(() => {
     setRestaurantData([]);
-    fetch("http://localhost:4000/resturants/", {
+    fetch("https://restaurant.a-table.app/resturants/", {
       mathod: "GET",
       headers: {
         "content-type": "application/json",

@@ -24,7 +24,7 @@ export default class DataTableComponent extends Component {
           createdCell: (td, cellData, rowData, row, col) =>
             ReactDOM.render(
               <React.Fragment>
-                <Button variant="success" onClick={()=>this.props.actions.updateAction(cellData)} style={{ width:'150px',marginTop:10 }}>Edit</Button>
+                {/* <Button variant="success" onClick={()=>this.props.actions.updateAction(cellData)} style={{ width:'150px',marginTop:10 }}>Edit</Button> */}
                 <span> </span>
                 <Button variant="danger" onClick={()=>this.props.actions.deleteAction(cellData)} style={{width:'150px',marginTop:10 }}>Delete</Button>
                 {/* {this.props.is_restaurant === true?
@@ -53,11 +53,11 @@ export default class DataTableComponent extends Component {
   render() {
     return (
       <div>
-          {this.props.is_order !== true?
+          {/* {this.props.is_order !== true?
           <Row style={{flexDirection:'row-reverse'}}>
             <Button vairent="primary" onClick={this.props.actions.addAction}>Add</Button>
           </Row>:""}
-          <hr/>
+          <hr/> */}
           <Row>
             <Col className="table-responsive">
               <table style={{backgroundColor:'#fff',overflow: 'hidden',borderRadius:'4px'}}
