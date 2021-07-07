@@ -119,7 +119,9 @@ export default function RestaurantList() {
               ? `<img style="width:100px;height:100px" src="${baseUrl}${item.resturant_image}" alt="resturant Image" />`
               : `<img style="width:100px;height:100px" src="https://image.freepik.com/free-vector/no-data-concept-illustration_114360-626.jpg" alt="resturant Image" />`,
             item.resturant_name,
-            item.resturant_desc,
+            item.resturant_desc && item.resturant_desc.length > 0 //Check for existence added as some data did not have description and it was throwing error
+              ? item.resturant_desc
+              : "",
             item.cuisine_type !== undefined
               ? item.cuisine_type.name
               : "Not Defined",
@@ -235,6 +237,7 @@ export default function RestaurantList() {
   };
 
   //  reset state data
+  // addressError added to this function as it was making button disablded after form submission
   const handleResetState = () => {
     setState({
       resturant_image: "",
@@ -248,6 +251,7 @@ export default function RestaurantList() {
       lat: "",
       long: "",
       city: "",
+      addressError: "",
       // password
       password: "",
       passwordError: "",

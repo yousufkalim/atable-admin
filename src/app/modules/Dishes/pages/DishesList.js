@@ -202,12 +202,14 @@ export default function DishesList() {
             item.dish_images.length > 0
               ? `<img style="width:100px;height:100px" src="${baseUrl}${item.dish_images[0]}" alt="resturant Image" />`
               : `<img style="width:100px;height:100px" src="https://image.freepik.com/free-vector/no-data-concept-illustration_114360-626.jpg" alt="resturant Image" />`,
-            item.dish_name,
-            item.dish_description,
+            item.dish_name && item.dish_name.length > 0 ? item.dish_name : "", //Checks added due to database inconsistency
+            item.dish_description && item.dish_description.length > 0
+              ? item.dish_description
+              : "",
             item.resturant_id !== null && item.resturant_id !== undefined
               ? item.resturant_id.resturant_name
               : "No Restaurant",
-            item.price,
+            item.price ? item.price : "",
             convertStringToList(item.tags[0]),
             item.rating !== undefined ? item.rating : 0,
             moment(item.createdDate).format("ddd MM YYYY HH:mm"),

@@ -86,9 +86,9 @@ export default function DishesList() {
     setTableData([]);
     var SendUrl = "";
     if (rest_id !== "error" && rest_id !== undefined) {
-      SendUrl = "http://localhost:4000/tables/restaurant/" + rest_id;
+      SendUrl = "https://restaurant.a-table.app/tables/restaurant/" + rest_id;
     } else {
-      SendUrl = "http://localhost:4000/tables/";
+      SendUrl = "https://restaurant.a-table.app/tables/";
     }
     fetch(SendUrl, {
       mathod: "GET",
@@ -372,14 +372,15 @@ export default function DishesList() {
           data={tableData}
           actions={actionsList}
           qr_generate={true}
+          tableType="tableData"
         />
       ) : (
         <>
-          <Row style={{ flexDirection: "row-reverse" }}>
+          {/* <Row style={{ flexDirection: "row-reverse" }}>
             <Button vairent="primary" onClick={() => setShow(true)}>
               Add
             </Button>
-          </Row>
+          </Row> */}
           <hr />
           <p style={{ textAlign: "center" }}>No Record Found</p>
         </>

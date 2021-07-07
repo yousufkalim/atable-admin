@@ -76,9 +76,9 @@ export default function OrderList() {
             item.resturant_id !== null && item.resturant_id !== undefined
               ? item.resturant_id.resturant_name
               : "No Restaurant",
-            item.total_items,
-            item.total_price,
-            item.order_status,
+            item.total_items ? item.total_items : "",
+            item.total_price ? item.total_price : "",
+            item.order_status ? item.order_status : "",
             moment(item.createdDate).format("ddd MM YYYY HH:mm"),
           ]);
         });
