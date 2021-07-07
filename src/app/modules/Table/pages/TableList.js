@@ -21,7 +21,6 @@ import QRCode from "qrcode.react";
 
 export default function DishesList() {
   const { rest_id } = useParams();
-  const baseUrl = "https://restaurant.a-table.app/";
   const qrRef = useRef();
 
   const [state, setState] = React.useState({
@@ -523,7 +522,7 @@ export default function DishesList() {
                     style={{ width: 256 }}
                     value={JSON.stringify(qrInfo)}
                 /> */}
-                <img src={`${baseUrl}${qrValue}`} class="img-responsive" alt="qr-code" />
+                <img src={`${process.env.REACT_APP_BASE_URL}${qrValue}`} class="img-responsive" alt="qr-code" />
               </Row>
             </>
           ) : (
