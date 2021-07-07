@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseUrl = "http://localhost:4000/";
+const baseUrl = process.env.BASE_URL;
 
 export const LOGIN_URL = `${baseUrl}users/authenticate`;
 export const REGISTER_URL = "api/auth/register";
@@ -8,10 +8,10 @@ export const REQUEST_PASSWORD_URL = "api/auth/forgot-password";
 
 export const ME_URL = `${baseUrl}/users/current/`;
 
-export function login(email,password) {
+export function login(email, password) {
   // return axios.post(LOGIN_URL, { email, password });
-  // debugger; 
-  return APICall('POST',LOGIN_URL,email,password)
+  // //debugger;
+  return APICall("POST", LOGIN_URL, email, password);
 }
 
 export function register(email, fullname, username, password) {
@@ -23,30 +23,29 @@ export function requestPassword(email) {
 }
 
 export function getUserByToken(token) {
-  debugger;
+  //debugger;
   // Authorization head should be fulfilled in interceptor.
   // return axios.get(ME_URL,{
   //   headers: {
   //     'content-type':'application/json',
   //     'Authorization': `Bearer ${token}`,
-  //   } 
+  //   }
   // }
   // );
-  return localStorage.getItem('usertest');
+  return localStorage.getItem("usertest");
 }
 
-
-function APICall (method,url,params,callBack) {
-  fetch(url,{
+function APICall(method, url, params, callBack) {
+  fetch(url, {
     method,
-    headers:{
-      'content-type':'application/json',
+    headers: {
+      "content-type": "application/json",
     },
-    body:params.dataToSend,
+    body: params.dataToSend,
   })
-  .then(res => res.json())
-  .then(responseJson => {
-    callBack(responseJson);
-  })
-  .catch(e=>console.log(e));
+    .then((res) => res.json())
+    .then((responseJson) => {
+      callBack(responseJson);
+    })
+    .catch((e) => console.log(e));
 }

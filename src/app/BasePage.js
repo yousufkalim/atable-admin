@@ -12,6 +12,7 @@ import OrderPage from "./pages/OrderPage";
 import GenericDishName from "./pages/GenericDishName";
 import DishTypePage from "./pages/DishTypePage";
 import CuisinePage from "./pages/CuisinePage";
+import SpecialItemPage from "./pages/specialItemPage";
 
 export default function BasePage() {
     // useEffect(() => {
@@ -35,6 +36,7 @@ export default function BasePage() {
                 <ContentRoute path="/dishes/:menu_id" component={DishesPage} />
                 <ContentRoute path="/genericDishNameList" component={GenericDishName} />
                 <ContentRoute path="/genericDishType" component={DishTypePage}  />
+                <ContentRoute path="/special-items" component={SpecialItemPage}  />
                 <ContentRoute path="/orders/:rest_id" component={OrderPage} />
                 <ContentRoute path="/cuisines" component={CuisinePage} />
                 <Redirect to="error/error-v1"/>

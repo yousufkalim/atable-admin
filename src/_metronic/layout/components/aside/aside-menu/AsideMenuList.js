@@ -124,6 +124,18 @@ export function AsideMenuList({ layoutProps }) {
                     <span className="menu-text">Generic Dish Type</span>
                   </NavLink>
                 </li>
+                {/* Special Items Types*/}
+                <li
+                    className={`menu-item ${getMenuItemActive("/special-items", false)}`}
+                    aria-haspopup="true"
+                >
+                  <NavLink className="menu-link" to="/special-items">
+                  <span className="svg-icon menu-icon">
+                    <CollectionsBookmarkIcon />
+                  </span>
+                    <span className="menu-text">Special Items</span>
+                  </NavLink>
+                </li>
                 {/* Table Management */}
                 <li
                     className={`menu-item ${getMenuItemActive("/table/", false)}`}
